@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/bottom_menu_event"
+        android:title="이벤트"/>
+    <item
+        android:id="@+id/bottom_menu_usecart"
+        android:title="카트 연동"/>
+    <item
+        android:id="@+id/bottom_menu_search"
+        android:title="검색"/>
+
+</menu>
