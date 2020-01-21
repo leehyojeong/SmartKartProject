@@ -6,6 +6,7 @@ import android.view.MenuItem
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import com.example.myapplication.CodePage.CodeFragment
 import com.example.myapplication.R
 import kotlinx.android.synthetic.main.activity_main2.*
 
@@ -14,6 +15,7 @@ class MainActivity2 : AppCompatActivity() {
     lateinit var eventFrag:EventFragment
     lateinit var mainFrag:MainFragment
     lateinit var searchFrag:SearchFragment
+    lateinit var codeFrag:CodeFragment
     lateinit var fm:FragmentManager
     lateinit var  ft:FragmentTransaction
 
@@ -37,7 +39,7 @@ class MainActivity2 : AppCompatActivity() {
                     setFragment(0)
                 }
                 R.id.cart_menu->{
-                    setFragment(1)
+                    setFragment(3)
                 }
                 R.id.search_menu->{
                     setFragment(2)
@@ -56,7 +58,6 @@ class MainActivity2 : AppCompatActivity() {
             0->{
                 //이벤트 프래그먼트일 때
                 ft.replace(R.id.frameLayout,eventFrag)
-
                 ft.commit()
             }
             1->{
@@ -68,6 +69,11 @@ class MainActivity2 : AppCompatActivity() {
             2->{
                 //검색 프래그먼트일 때
                 ft.replace(R.id.frameLayout,searchFrag)
+                ft.commit()
+            }
+            3->{
+                //연동코드 입력 프래그먼트
+                ft.replace(R.id.frameLayout,codeFrag)
                 ft.commit()
             }
         }
