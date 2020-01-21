@@ -6,9 +6,9 @@
     tools:context=".MainPage.MainFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <ViewFlipper
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="메인" />
+        android:layout_height="300dp"
+        android:id="@+id/event_slide"/>
 
 </FrameLayout>

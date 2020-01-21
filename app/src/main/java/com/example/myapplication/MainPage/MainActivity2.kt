@@ -56,11 +56,13 @@ class MainActivity2 : AppCompatActivity() {
             0->{
                 //이벤트 프래그먼트일 때
                 ft.replace(R.id.frameLayout,eventFrag)
+
                 ft.commit()
             }
             1->{
                 //메인 프래그먼트일 때
                 ft.replace(R.id.frameLayout,mainFrag)
+                mainFrag.setInit()
                 ft.commit()
             }
             2->{
