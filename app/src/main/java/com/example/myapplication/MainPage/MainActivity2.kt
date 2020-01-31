@@ -24,7 +24,6 @@ class MainActivity2 : AppCompatActivity() {
 
 
     lateinit var mainFrag:MainFragment
-    lateinit var searchFrag:SearchFragment
     lateinit var codeFrag:CodeFragment
     lateinit var fm:FragmentManager
     lateinit var  ft:FragmentTransaction
@@ -37,7 +36,6 @@ class MainActivity2 : AppCompatActivity() {
 
     fun setNavigation(){
         mainFrag = MainFragment()
-        searchFrag = SearchFragment()
         codeFrag = CodeFragment()
 
 //        bottomNavigationView.menu.getItem(0).setChecked(false)
