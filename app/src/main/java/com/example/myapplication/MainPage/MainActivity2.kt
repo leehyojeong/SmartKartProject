@@ -63,6 +63,7 @@ class MainActivity2 : AppCompatActivity() {
                     makeDialog(2)
                 }
             }
+            bottomNavigationView.menu.getItem(1).setChecked(true)//항상 검색이 선택되도록(화면꺼지고)
             true
         }
     }
@@ -100,6 +101,8 @@ class MainActivity2 : AppCompatActivity() {
         var y = (size.y * 0.8f).toInt()
 
         window!!.setLayout(x,y)
+
+
     }
 
     fun setFragment(n:Int){
