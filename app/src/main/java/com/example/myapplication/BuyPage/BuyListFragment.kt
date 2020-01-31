@@ -1,4 +1,4 @@
-package com.example.myapplication.MainPage
+package com.example.myapplication.BuyPage
 
 
 import android.os.Bundle
@@ -12,14 +12,14 @@ import com.example.myapplication.R
 /**
  * A simple [Fragment] subclass.
  */
-class EventFragment : Fragment() {
+class BuyListFragment : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_event, container, false)
+        return inflater.inflate(R.layout.fragment_buy_list, container, false)
     }
 
 
