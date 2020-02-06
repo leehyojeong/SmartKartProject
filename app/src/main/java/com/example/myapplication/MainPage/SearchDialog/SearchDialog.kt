@@ -39,6 +39,7 @@ class SearchDialog(context: Context) : Dialog(context) {
             var name = search_item.text.toString()//검색할 물품 이름
             //리스트를 만들어줌
             //이름이 포함되는 물품
+
             initLayout()
         }
     }
