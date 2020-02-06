@@ -99,8 +99,6 @@ class MainActivity2 : AppCompatActivity() {
         var y = (size.y * 0.8f).toInt()
 
         window!!.setLayout(x,y)
-
-
     }
 
     fun setFragment(n:Int){
