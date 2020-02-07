@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CodePage.CodeFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <EditText
+            android:id="@+id/codeNum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="102dp"
+            android:layout_marginTop="270dp"
+            android:ems="10"
+            android:hint="코드를 입력해주세요"
+            android:inputType="number" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/codeNum"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="158dp"
+            android:layout_marginTop="21dp"
+            android:id="@+id/codeBtn"
+            android:text="확인" />
+    </RelativeLayout>
+
+
+</FrameLayout>
