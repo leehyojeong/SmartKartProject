@@ -39,6 +39,7 @@ class BuyListFragment : Fragment() {
     fun init(){
         list = arrayListOf()
         list.add(ListItem("abc.jpg","새우깡",1,800))
+        list.add(ListItem("abcd.jpg","새우깡2",2,900))
 
        initListLayout()
     }

@@ -2,6 +2,8 @@ package com.example.myapplication.MainPage.EventDialog
 
 import android.app.Dialog
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
@@ -21,6 +23,7 @@ class EventDialog(context: Context) : Dialog(context) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         var v = R.layout.event_dialog
+        getWindow()?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT));
         setContentView(v)
 
         //다이얼로드 밖의 화면 흐리게

@@ -3,34 +3,118 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".BuyPage.BuyListFragment">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".BuyPage.BuyListFragment"
+    android:background="#f2f2f2">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+        <View
+            android:id="@+id/yellow_top_background"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/yellow_back_height"
+            android:background="@drawable/yellow_top_back"
+
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
 
         <TextView
-            android:id="@+id/total_price"
-            android:layout_width="292dp"
-            android:layout_height="77dp"
-            android:layout_above="@+id/total_list"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="77dp"
-            android:layout_marginEnd="65dp"
-            android:layout_marginBottom="13dp"
-            android:text="1700원"
-            android:gravity="right"/>
+            android:id="@+id/buy_list_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="나의 구매 리스트"
+            android:textSize="@dimen/title_text"
+            android:textColor="#404040"
+            android:fontFamily="@font/apple_neo_sb"
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/total_list"
-            android:layout_width="294dp"
-            android:layout_height="520dp"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginStart="52dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="46dp" />
-    </RelativeLayout>
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/buy_list_container"/>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/buy_list_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#fff"
+
+            android:layout_marginLeft="@dimen/div_margin_20"
+            android:layout_marginRight="@dimen/div_margin_20"
+            android:layout_marginTop="@dimen/contianer_top_margin"
+            android:padding="@dimen/dialog_layout_padding"
+            android:elevation="3dp"
+
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/total_price_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:layout_marginTop="@dimen/div_margin_10"
+                android:layout_marginLeft="@dimen/div_margin_15"
+                android:layout_marginRight="@dimen/div_margin_15"
+
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:text="총 금액"
+                    android:textSize="17dp"
+                    android:textColor="#595959"
+                    android:fontFamily="@font/apple_neo_r"
+
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+                <TextView
+                    android:id="@+id/total_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:text="1700원"
+                    android:textSize="@dimen/sub_title_text"
+                    android:textColor="#404040"
+                    android:fontFamily="@font/apple_neo_r"
+
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <View
+                android:id="@+id/yellow_line"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/line_height"
+                android:background="#ffc000"
+
+                android:layout_marginTop="@dimen/div_margin_5"
+                android:layout_marginLeft="@dimen/div_margin_15"
+                android:layout_marginRight="@dimen/div_margin_15"
+
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/total_price_container"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/total_list"
+                tools:listitem="@layout/item_list"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="@dimen/div_margin_10"
+                android:paddingTop="5dp"
+
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/yellow_line"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>

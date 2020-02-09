@@ -12,19 +12,33 @@
     <dimen name="nav_btn_width">25dp</dimen>
     <dimen name="search_btn_height">15dp</dimen>
     <dimen name="search_btn_width">15dp</dimen>
-    <dimen name="map_height">350dp</dimen>
-    <dimen name="map_width">350dp</dimen>
+    <dimen name="square_height">350dp</dimen>
+    <dimen name="square_width">350dp</dimen>
     <dimen name="line_height">1.5dp</dimen>
+    <dimen name="yellow_back_height">200dp</dimen>
+    <dimen name="item_container_height">150dp</dimen>
+    <dimen name="item_height">90dp</dimen>
+    <dimen name="item_width">90dp</dimen>
 
 <!--    폰트 크기-->
     <dimen name="input_text">15dp</dimen>
     <dimen name="btn_text">15dp</dimen>
+    <dimen name="title_text">22dp</dimen>
+    <dimen name="sub_title_text">20dp</dimen>
+    <dimen name="item_info_text">14dp</dimen>
 
 <!--    padding-->
     <dimen name="input_padding">10dp</dimen>
-    <dimen name="search_list_padding">15dp</dimen>
+    <dimen name="dialog_layout_padding">15dp</dimen>
+    <dimen name="div_padding_10">10dp</dimen>
+    <dimen name="div_padding_15">15dp</dimen>
 
 <!--    margin-->
+    <dimen name="div_margin_5">5dp</dimen>
     <dimen name="div_margin_10">10dp</dimen>
     <dimen name="div_margin_15">15dp</dimen>
+    <dimen name="div_margin_20">20dp</dimen>
+    <dimen name="div_margin_25">25dp</dimen>
+    <dimen name="contianer_top_margin">100dp</dimen>
+
 </resources>

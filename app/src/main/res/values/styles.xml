@@ -34,6 +34,12 @@
         <item name="android:windowLightStatusBar">true</item>
     </style>
 
+    <style name="AppTheme.yellow_notitle">
+        <item name="windowNoTitle">true</item>
+        <item name="android:statusBarColor">#ffd000</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
     <style name="AppTheme.blackStatusBar">
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>

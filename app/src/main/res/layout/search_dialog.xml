@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/dialog_back"
-    android:padding="@dimen/search_list_padding">
+    android:padding="@dimen/dialog_layout_padding">
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent">
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/search_container"
                 android:layout_width="match_parent"
@@ -71,7 +72,7 @@
             <TextView
                 android:id="@+id/map"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/map_height"
+                android:layout_height="@dimen/square_height"
                 android:text="지도"
                 android:gravity="center"
 

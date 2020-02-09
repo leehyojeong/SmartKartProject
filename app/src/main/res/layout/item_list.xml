@@ -2,50 +2,121 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:gravity="center">
 
-    <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:id="@+id/item_img"/>
-
-    <LinearLayout
+<!--    이미지 포함 상품 정보-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/item_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:orientation="horizontal">
-            <TextView
-                android:layout_width="250dp"
-                android:layout_height="match_parent"
-                android:text="새우깡"
-                android:gravity="left"
-                android:layout_gravity="left"
-                android:id="@+id/item_name"/>
-            <TextView
-                android:layout_width="50dp"
-                android:layout_height="match_parent"
-                android:text="X1"
-                android:layout_gravity="right"
-                android:gravity="right"
-                android:id="@+id/item_count"/>
+        android:layout_height="wrap_content"
+        android:background="@drawable/item_content_back"
 
-        </LinearLayout>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="25dp"
-            android:text="W960"
-            android:id="@+id/item_price">
-            
-        </TextView>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:text="W960"
-            android:gravity="right"
-            android:id="@+id/total_price_list"/>
-    </LinearLayout>
+        android:layout_marginLeft="@dimen/div_margin_10"
+        android:layout_marginRight="@dimen/div_margin_10"
+        android:layout_marginTop="@dimen/div_margin_5"
+        android:layout_marginBottom="@dimen/div_margin_5"
+        android:padding="@dimen/div_padding_15"
+        android:elevation="2dp">
+
+        <ImageView
+            android:id="@+id/item_img"
+            android:layout_width="@dimen/item_width"
+            android:layout_height="@dimen/item_height"
+            android:background="@drawable/test_item"
+
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+<!--        상품 전체 정보-->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/item_info_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginLeft="@dimen/div_margin_10"
+            android:layout_marginRight="@dimen/div_margin_10"
+
+            app:layout_constraintLeft_toRightOf="@+id/item_img"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+<!--            상품명, 개수 -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/item_info_sub_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+                <TextView
+                    android:id="@+id/item_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="새우깡"
+                    android:textSize="@dimen/item_info_text"
+                    android:textColor="#595959"
+                    android:fontFamily="@font/apple_neo_r"
+
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+                <TextView
+                    android:id="@+id/item_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="X1"
+                    android:textSize="@dimen/item_info_text"
+                    android:textColor="#262626"
+                    android:fontFamily="@font/apple_neo_sb"
+
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+<!--            아이템 당 가격 정보-->
+            <TextView
+                android:id="@+id/item_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="W960"
+                android:textSize="@dimen/item_info_text"
+                android:textColor="#262626"
+                android:fontFamily="@font/apple_neo_sb"
+
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/item_info_sub_container"/>
+
+            <View
+                android:id="@+id/grey_line"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/line_height"
+                android:background="#d9d9d9"
+                android:layout_marginTop="@dimen/div_margin_5"
+
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/item_price"/>
+
+<!--            전체 아이템 합계 가격 정보-->
+            <TextView
+                android:id="@+id/total_price_list"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="W960"
+                android:textSize="@dimen/item_info_text"
+                android:textColor="#262626"
+                android:fontFamily="@font/apple_neo_sb"
+                android:layout_marginTop="@dimen/div_margin_5"
+
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/grey_line"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>
