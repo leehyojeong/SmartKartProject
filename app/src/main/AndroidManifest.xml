@@ -9,14 +9,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".BuyPage.OtherItemDialog.OtherItemDialog"></activity>
-        <activity android:name=".MainPage.MainActivity2">
+        <activity
+            android:name=".BuyPage.OtherItemDialog.OtherItemDialog"
+            android:theme="@style/AppTheme.f2f2f2_notitle"></activity>
+
+        <activity
+            android:name=".MainPage.MainActivity2"
+            android:theme="@style/AppTheme.f2f2f2_notitle">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

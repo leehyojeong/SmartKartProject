@@ -2,43 +2,102 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/dialog_shape"
-    android:padding="10dp">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/dialog_back"
+    android:padding="@dimen/search_list_padding">
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <LinearLayout
+        android:layout_height="wrap_content">
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-            <LinearLayout
+            android:layout_height="wrap_content">
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/search_container"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_height="@dimen/input_height"
+
+                android:layout_marginTop="@dimen/div_margin_10"
+                android:layout_marginLeft="@dimen/div_margin_15"
+                android:layout_marginRight="@dimen/div_margin_15"
+
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
                 <EditText
+                    android:id="@+id/search_item"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="3"
+                    android:layout_height="40dp"
+                    android:background="#00000000"
+
                     android:hint="상품 검색"
-                    android:id="@+id/search_item"/>
+                    android:textSize="@dimen/input_text"
+                    android:textColorHint="#a6a6a6"
+                    android:textColor="#404040"
+                    android:fontFamily="@font/apple_neo_r"
+                    android:paddingLeft="@dimen/input_padding"
+                    android:paddingRight="@dimen/input_padding"
+
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toLeftOf="@+id/search_btn"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
                 <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="검색"
-                    android:id="@+id/search_btn"/>
-            </LinearLayout>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="500dp"
-            android:text="지도"
-            android:gravity="center"/>
+                    android:id="@+id/search_btn"
+                    android:layout_width="@dimen/search_btn_width"
+                    android:layout_height="@dimen/search_btn_height"
+                    android:background="@drawable/search"
+                    android:layout_margin="@dimen/div_margin_10"
+
+                    app:layout_constraintLeft_toRightOf="@+id/search_item"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:id="@+id/yellow_line"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/line_height"
+                android:background="#ffc000"
+
+                android:layout_marginLeft="@dimen/div_margin_15"
+                android:layout_marginRight="@dimen/div_margin_15"
+
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/search_container"/>
+
+            <TextView
+                android:id="@+id/map"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/map_height"
+                android:text="지도"
+                android:gravity="center"
+
+                android:layout_marginTop="@dimen/div_margin_10"
+                android:layout_marginLeft="@dimen/div_margin_15"
+                android:layout_marginRight="@dimen/div_margin_15"
+
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/yellow_line" />
 
             <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/search_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/search_list"/>
-        </LinearLayout>
+
+                android:layout_marginTop="@dimen/div_margin_10"
+                android:layout_marginBottom="@dimen/div_margin_10"
+                android:layout_marginLeft="@dimen/div_margin_15"
+                android:layout_marginRight="@dimen/div_margin_15"
+
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/map"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
 

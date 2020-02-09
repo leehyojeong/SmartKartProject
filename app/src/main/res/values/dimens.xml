@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+<!--    가로, 세로 크기-->
+    <dimen name="bottom_nav_height">60dp</dimen>
+    <dimen name="code_input_height">55dp</dimen>
+    <dimen name="code_input_width">350dp</dimen>
+    <dimen name="input_height">45dp</dimen>
+    <dimen name="code_btn_height">55dp</dimen>
+    <dimen name="code_btn_width">350dp</dimen>
+    <dimen name="nav_btn_height">25dp</dimen>
+    <dimen name="nav_btn_width">25dp</dimen>
+    <dimen name="search_btn_height">15dp</dimen>
+    <dimen name="search_btn_width">15dp</dimen>
+    <dimen name="map_height">350dp</dimen>
+    <dimen name="map_width">350dp</dimen>
+    <dimen name="line_height">1.5dp</dimen>
+
+<!--    폰트 크기-->
+    <dimen name="input_text">15dp</dimen>
+    <dimen name="btn_text">15dp</dimen>
+
+<!--    padding-->
+    <dimen name="input_padding">10dp</dimen>
+    <dimen name="search_list_padding">15dp</dimen>
+
+<!--    margin-->
+    <dimen name="div_margin_10">10dp</dimen>
+    <dimen name="div_margin_15">15dp</dimen>
+</resources>

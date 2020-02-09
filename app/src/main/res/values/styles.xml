@@ -16,4 +16,29 @@
         <item name="android:windowBackground">@drawable/dialog_shape</item>
     </style>
 
+<!--    커스텀-->
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">true</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <style name="AppTheme.notitlebar">
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+    </style>
+
+    <style name="AppTheme.f2f2f2_notitle">
+        <item name="windowNoTitle">true</item>
+        <item name="android:statusBarColor">#f2f2f2</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="AppTheme.blackStatusBar">
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">#000</item>
+    </style>
+
 </resources>

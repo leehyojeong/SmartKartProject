@@ -17,11 +17,9 @@ import androidx.fragment.app.FragmentTransaction
 import com.example.myapplication.CodePage.CodeFragment
 import com.example.myapplication.MainPage.EventDialog.EventDialog
 import com.example.myapplication.MainPage.SearchDialog.SearchDialog
-import com.example.myapplication.R
 import kotlinx.android.synthetic.main.activity_main2.*
 
 class MainActivity2 : AppCompatActivity() {
-
 
     lateinit var mainFrag:MainFragment
     lateinit var codeFrag:CodeFragment
@@ -30,7 +28,7 @@ class MainActivity2 : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main2)
+        setContentView(com.example.myapplication.R.layout.activity_main2)
         setNavigation()
     }
 
@@ -46,17 +44,16 @@ class MainActivity2 : AppCompatActivity() {
 
         //네비게이션 바 이벤트 리스너 설정
 
-
         bottomNavigationView.setOnNavigationItemSelectedListener {
             when(it.itemId){
-                R.id.event_menu->{
+                com.example.myapplication.R.id.event_menu->{
 //                    setFragment(0)
                     makeDialog(0)
                 }
-                R.id.cart_menu->{
+                com.example.myapplication.R.id.cart_menu->{
                     setFragment(1)
                 }
-                R.id.search_menu->{
+                com.example.myapplication.R.id.search_menu->{
 //                    setFragment(2)
                     makeDialog(2)
                 }
@@ -109,7 +106,7 @@ class MainActivity2 : AppCompatActivity() {
         when(n){
             1->{
                 //연동코드 입력 프래그먼트
-                ft.replace(R.id.frameLayout,codeFrag)
+                ft.replace(com.example.myapplication.R.id.frameLayout,codeFrag)
                 ft.commit()
             }
         }
