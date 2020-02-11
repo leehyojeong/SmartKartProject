@@ -9,11 +9,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.BuyPage.OtherItemDialog.OtherItemDialog
 
 import com.example.myapplication.R
+import kotlinx.android.synthetic.main.fragment_buy_list.*
 import kotlinx.android.synthetic.main.fragment_buy_list.view.*
 
 /**
@@ -24,6 +26,7 @@ class BuyListFragment : Fragment() {
     lateinit var adapter:ItemListAdapter
     lateinit var list:ArrayList<ListItem>//카트에 담긴 아이템 리스트
     lateinit var recycler:RecyclerView
+    lateinit var total_price:TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,6 +35,7 @@ class BuyListFragment : Fragment() {
         // Inflate the layout for this fragment
         var v = inflater.inflate(R.layout.fragment_buy_list, container, false)
         recycler = v.total_list
+        total_price = v.total_price
         init()
         return v
     }
@@ -66,6 +70,13 @@ class BuyListFragment : Fragment() {
             }
 
         }
+
+        //구매한 물건 총 금액
+        var total = 0
+        for(l in list){
+            total += (l.number*l.price)
+        }
+        total_price.text = total.toString()
     }
 
 

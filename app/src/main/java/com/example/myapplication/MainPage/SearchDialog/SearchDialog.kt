@@ -6,14 +6,24 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.Gravity
+import android.view.View
 import android.view.WindowManager
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.BuyPage.ItemListAdapter
 import com.example.myapplication.BuyPage.ListItem
+import com.example.myapplication.MainPage.MainFragment
 import com.example.myapplication.R
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.search_dialog.*
 
-class SearchDialog(context: Context) : Dialog(context) {
+class SearchDialog(context: Context) : Dialog(context){
 
     lateinit var adapter:ItemListAdapter
     lateinit var list:ArrayList<ListItem>//검색
@@ -21,8 +31,12 @@ class SearchDialog(context: Context) : Dialog(context) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         var v = R.layout.search_dialog
+
+
         getWindow()?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT));
         setContentView(v)
+
+
 
         //다이얼로드 밖의 화면 흐리게
         var layoutParams = WindowManager.LayoutParams()
@@ -42,10 +56,11 @@ class SearchDialog(context: Context) : Dialog(context) {
             var name = search_item.text.toString()//검색할 물품 이름
             //리스트를 만들어줌
             //이름이 포함되는 물품
-
             initLayout()
         }
+
     }
+
 
     fun initLayout(){
         adapter = ItemListAdapter(list, context,false)

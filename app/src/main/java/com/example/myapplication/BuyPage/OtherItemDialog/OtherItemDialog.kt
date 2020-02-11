@@ -32,6 +32,7 @@ class OtherItemDialog(context: Context) : Dialog(context) {
 
         window!!.attributes = layoutParams
 
+        list = arrayListOf()
         initLayout()
     }
 
