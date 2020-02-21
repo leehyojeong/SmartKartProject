@@ -42,8 +42,9 @@ class BuyListFragment : Fragment() {
 
     fun init(){
         list = arrayListOf()
-        list.add(ListItem("abc.jpg","새우깡",1,800))
-        list.add(ListItem("abcd.jpg","새우깡2",2,900))
+        list.add(ListItem("abc.jpg","새우깡",1,800,"과자,초콜릿,시리얼,빵"))
+        list.add(ListItem("abcd.jpg","새우깡2",2,900,"과자,초콜릿,시리얼,빵"))
+        list.add(ListItem("fgh.jpg","노브랜드",1,1000,"과자,초콜릿,시리얼,빵"))
 
        initListLayout()
     }
@@ -65,7 +66,7 @@ class BuyListFragment : Fragment() {
             ) {
                // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
                 //아이템 하나를 클릭했을 때 다이얼로그 보여줌
-                var otherDialog = OtherItemDialog(context!!)
+                var otherDialog = OtherItemDialog(context!!,list[position])
                 otherDialog.show()
             }
 

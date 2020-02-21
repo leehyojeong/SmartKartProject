@@ -38,7 +38,7 @@ class ItemListAdapter(var items:ArrayList<ListItem>,val context:Context, var has
         else{
             holder.count.text = ""
         }
-        holder.price.text = items[position].price.toString()
+        holder.price.text = items[position].price.toString()+"원"
         var total = 0
         for (i in 0..position){
             total += (items[i].price * items[i].number)

@@ -1,14 +1,22 @@
 package com.example.myapplication.MainPage.SearchDialog
 
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.Application
 import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.BuyPage.ItemListAdapter
@@ -24,14 +32,18 @@ import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.search_dialog.*
 
 class SearchDialog(context: Context) : Dialog(context){
+    var latitude = 0.0
+    var longitude = 0.0
+
+
 
     lateinit var adapter:ItemListAdapter
     lateinit var list:ArrayList<ListItem>//검색
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         var v = R.layout.search_dialog
-
 
         getWindow()?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT));
         setContentView(v)
@@ -59,6 +71,8 @@ class SearchDialog(context: Context) : Dialog(context){
             initLayout()
         }
 
+
+
     }
 
 
@@ -68,4 +82,6 @@ class SearchDialog(context: Context) : Dialog(context){
         search_list.layoutManager = layoutManager
         search_list.adapter = adapter
     }
+
+
 }

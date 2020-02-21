@@ -1,5 +1,7 @@
 package com.example.myapplication.MainPage
 
+import android.annotation.SuppressLint
+import android.app.Application
 import android.app.Dialog
 import android.content.Context
 import android.content.pm.PackageManager
@@ -26,26 +28,57 @@ import com.example.myapplication.MainPage.EventDialog.EventDialog
 import com.example.myapplication.MainPage.SearchDialog.SearchDialog
 import com.example.myapplication.R
 import com.google.android.gms.maps.*
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_main2.*
 import kotlinx.android.synthetic.main.search_dialog.*
 import java.util.jar.Manifest
 
-class MainActivity2 : AppCompatActivity() {
+class MainActivity2 : AppCompatActivity(),OnMapReadyCallback{
 
     lateinit var mainFrag:MainFragment
     lateinit var codeFrag:CodeFragment
     lateinit var fm:FragmentManager
     lateinit var  ft:FragmentTransaction
 
+
+
     val PERMISSION_REQUEST_ACCESS_FINE_LOCATION= 5123
     var permissionArray = arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION)
 
     //나의 위치 관련된 변수
     lateinit var locationManager:LocationManager
-    var latitude = 0.0//위도
-    var longitude = 0.0//경도
+    var latitude = 0.0 as Double//위도
+    var longitude = 0.0 as Double//경도
+
+
+    @SuppressLint("MissingPermission")
+    override fun onMapReady(p0: GoogleMap?) {
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        var locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        var locationProvider = LocationManager.GPS_PROVIDER
+        var currentLocation = locationManager.getLastKnownLocation(locationProvider)
+        if(currentLocation!=null){
+            latitude = currentLocation.latitude
+            longitude = currentLocation.longitude
+        }
+
+        Log.d("확인","ONMapReadey "+latitude.toString()+" "+longitude.toString())
+
+        var position = LatLng(latitude,longitude)
+        var markerOption = MarkerOptions()
+        markerOption.position(position)
+        markerOption.title("서울")
+        markerOption.snippet("제발")
+
+        p0!!.addMarker(markerOption)
+
+        var center = CameraUpdateFactory.newLatLngZoom(position,17f) as CameraUpdate
+        p0!!.moveCamera(center)
+        p0!!.animateCamera(CameraUpdateFactory.zoomTo(17f))
+    }
 
     //권한설정
     fun initPermission(){
@@ -94,6 +127,8 @@ class MainActivity2 : AppCompatActivity() {
         setNavigation()
 
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+
     }
 
     fun setNavigation(){
@@ -196,16 +231,30 @@ class MainActivity2 : AppCompatActivity() {
     }
 
     //나의 위치 받아오는 함수
+
+    fun setMyLocation(){
+        var mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment!!.getMapAsync(this)
+    }
+
     fun requestMyLocation(){
+        Log.d("확인","requestMyLocation")
+
+        //수동으로 위치 구하기
+        setMyLocation()
+
         if(ContextCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED)
             return
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,100,10f,object:LocationListener{
             override fun onLocationChanged(p0: Location?) {
                 //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                Log.d("확인","onLocationChanged")
                 locationManager.removeUpdates(this)//나의 위치를 한번만 가져옴
 
                 latitude = p0!!.latitude
                 longitude = p0!!.longitude
+                Log.d("확인",latitude.toString())
+                Log.d("확인",longitude.toString())
 
                 var fragmentManager = supportFragmentManager
                 var map = fragmentManager.findFragmentById(R.id.map) as SupportMapFragment
@@ -219,9 +268,12 @@ class MainActivity2 : AppCompatActivity() {
 
                     it.addMarker(markerOption)
 
-                    it.moveCamera(CameraUpdateFactory.newLatLng(position))
-                    it.animateCamera(CameraUpdateFactory.zoomTo(10f))
+                    var center = CameraUpdateFactory.newLatLngZoom(position,17f) as CameraUpdate
+
+                    it.moveCamera(center)
+                    it.animateCamera(CameraUpdateFactory.zoomTo(17f))
                 }
+                locationManager.removeUpdates(this)
             }
 
             override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
@@ -238,4 +290,6 @@ class MainActivity2 : AppCompatActivity() {
 
         })
     }
+
+
 }
