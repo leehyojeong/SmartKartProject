@@ -1,16 +1,20 @@
 package com.example.myapplication.MainPage
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.graphics.Point
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
+import android.location.*
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.Display
 import android.view.MenuItem
@@ -20,6 +24,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
@@ -27,15 +32,90 @@ import com.example.myapplication.CodePage.CodeFragment
 import com.example.myapplication.MainPage.EventDialog.EventDialog
 import com.example.myapplication.MainPage.SearchDialog.SearchDialog
 import com.example.myapplication.R
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.api.GoogleApi
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_main2.*
 import kotlinx.android.synthetic.main.search_dialog.*
+import org.json.JSONObject
+import java.util.*
 import java.util.jar.Manifest
+import kotlin.collections.ArrayList
+import com.google.android.gms.location.LocationListener
+import com.google.android.gms.maps.model.*
 
-class MainActivity2 : AppCompatActivity(),OnMapReadyCallback{
+class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,LocationListener{
+
+    override fun onLocationChanged(p0: Location?) {
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Log.d("확인","onLocationChanged")
+        currentPosition = LatLng(p0!!.latitude,p0!!.longitude)
+
+        setCurrentLocation(p0!!)
+        mCurrentLocation = p0!!
+    }
+
+    override fun onMapReady(p0: GoogleMap?) {
+       // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        mMap = p0!!
+
+        setDefaultLocation()
+
+        mMap.uiSettings.isMyLocationButtonEnabled = true
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(15f))
+        mMap.setOnMapClickListener {
+            mMoveMapByAPI = true
+            true
+        }
+        mMap.setOnMapClickListener {
+
+        }
+        mMap.setOnCameraIdleListener {
+            if(mMoveMapByUser && mRequestingLocationUpdates){
+                mMoveMapByAPI = false
+                //위치에 따른 카메라 이동 비활성화
+            }
+            mMoveMapByUser = true
+        }
+        mMap.setOnCameraMoveCanceledListener {
+
+        }
+        startLocationUpdates()
+    }
+
+    override fun onConnected(p0: Bundle?) {
+      //  TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
+    }
+
+    override fun onConnectionSuspended(p0: Int) {
+     //   TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onConnectionFailed(p0: ConnectionResult) {
+      //  TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        setDefaultLocation()
+    }
+
+    override fun onStart() {
+        if(mGoogleApiClient != null && mGoogleApiClient.isConnected == false){
+            mGoogleApiClient.connect()
+        }
+        super.onStart()
+    }
+
+    override fun onStop() {
+        if(mRequestingLocationUpdates){
+            stopLocationUpdates()
+        }
+        if(mGoogleApiClient.isConnected){
+            mGoogleApiClient.disconnect()
+        }
+        super.onStop()
+    }
 
     lateinit var mainFrag:MainFragment
     lateinit var codeFrag:CodeFragment
@@ -44,91 +124,257 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback{
 
 
 
-    val PERMISSION_REQUEST_ACCESS_FINE_LOCATION= 5123
+    //대형마트 정보
+    var martArray:ArrayList<mart> = arrayListOf()
+
+
+    //현재위치
     var permissionArray = arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION)
+    val PERMISSION_REQUEST_ACCESS_FINE_LOCATION= 2002
+    val GPS_ENABLE_REQUEST_CODE = 2001
+    val UPDATE_INTERVAL_MS:Long = 100
+    val FASTEST_UPDATE_INTERVAL_MS:Long = 50
+    lateinit var mGoogleApiClient:GoogleApiClient
+     var mLocationPermissionGranted:Boolean = false
+    lateinit var mMap:GoogleMap
+    var mRequestingLocationUpdates:Boolean = false
+    var mLastKnownLocation:Location ?= null
+    var askPermissionOnceAgain = false
+    var mRequestLocationUpdates = false
+    var mMoveMapByAPI = true
+    var mMoveMapByUser = true
+    lateinit var mCurrentLocation:Location
+    lateinit var currentPosition:LatLng
+    var currentMarker:Marker ?= null
 
-    //나의 위치 관련된 변수
-    lateinit var locationManager:LocationManager
-    var latitude = 0.0 as Double//위도
-    var longitude = 0.0 as Double//경도
+    var locationRequest = LocationRequest()
+        .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+
+    var eventDialog:Dialog ?= null
+    var searchDialog:Dialog ?= null
 
 
-    @SuppressLint("MissingPermission")
-    override fun onMapReady(p0: GoogleMap?) {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        var locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
-        var locationProvider = LocationManager.GPS_PROVIDER
-        var currentLocation = locationManager.getLastKnownLocation(locationProvider)
-        if(currentLocation!=null){
-            latitude = currentLocation.latitude
-            longitude = currentLocation.longitude
+    var martAddress = arrayListOf("서울특별시 송파구 충민로 10","서울특별시 노원구 마들로3길 15","서울 도봉구 노해로 65길 4")
+
+    //지도
+    fun startLocationUpdates(){
+        Log.d("확인","startLocationUpdates")
+        if(!checkLocationServiesStatus()){
+            showDialogForLocationServicesSetting()
+        }else{
+            if(ActivityCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
+                //퍼미션이 없음
+                return
+            }
+
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,locationRequest,this)
+            mRequestLocationUpdates = true
+            mMap.isMyLocationEnabled = true
         }
-
-        Log.d("확인","ONMapReadey "+latitude.toString()+" "+longitude.toString())
-
-        var position = LatLng(latitude,longitude)
-        var markerOption = MarkerOptions()
-        markerOption.position(position)
-        markerOption.title("서울")
-        markerOption.snippet("제발")
-
-        p0!!.addMarker(markerOption)
-
-        var center = CameraUpdateFactory.newLatLngZoom(position,17f) as CameraUpdate
-        p0!!.moveCamera(center)
-        p0!!.animateCamera(CameraUpdateFactory.zoomTo(17f))
     }
 
-    //권한설정
-    fun initPermission(){
-        if(!checkPermission(permissionArray)){
-            askPermission(permissionArray,PERMISSION_REQUEST_ACCESS_FINE_LOCATION)
+    fun stopLocationUpdates(){
+        mRequestingLocationUpdates = false
+    }
+
+    fun getCurrentAddress(latlng:LatLng):String?{
+        var geocoder = Geocoder(this,Locale.getDefault())
+
+        var address = arrayListOf<Address>()
+        address = geocoder.getFromLocation(latlng.latitude,latlng.longitude,1) as ArrayList<Address>
+
+        if(address == null || address.size == 0){
+            return null
+        }else{
+            var add = address.get(0)
+            return add.getAddressLine(0).toString()
+        }
+
+    }
+
+    fun checkLocationServiesStatus():Boolean{
+        var locationmanager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        return locationmanager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationmanager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    fun setCurrentLocation(location:Location){
+        mMoveMapByUser = false
+
+        if(currentMarker != null) currentMarker!!.remove()
+
+        var currentLatLng = LatLng(location.latitude,location.longitude)
+
+//        var markerOptions = MarkerOptions()
+//        markerOptions.position(currentLatLng)
+//        markerOptions.title("나")
+//        markerOptions.draggable(true)
+//
+//        currentMarker = mMap.addMarker(markerOptions)
+        //반경
+//        var circle = CircleOptions().center(currentLatLng)
+//            .radius(3000.0)
+//            .strokeWidth(0f)
+//            .fillColor(Color.parseColor("#FFBB00ff"))
+        //나의 좌표
+        var myLocation = Location("나")
+        myLocation.latitude = location.latitude
+        myLocation.longitude = location.longitude
+
+        //마트 좌표 찍기
+        var geocoder = Geocoder(this,Locale.getDefault())
+        for (i in martAddress){
+            var markerOptions = MarkerOptions()
+
+            var addresses = arrayListOf<Address>()
+            addresses = geocoder.getFromLocationName(i,1) as ArrayList<Address>
+
+            var latitude = addresses.get(0).latitude
+            var longitude = addresses.get(0).longitude
+
+            //마트 좌표
+            var martLocation = Location("마트")
+            martLocation.latitude = latitude
+            martLocation.longitude = longitude
+
+            if(myLocation.distanceTo(martLocation) <= 3000){
+                var latlng = LatLng(latitude,longitude)
+                markerOptions.position(latlng)
+                markerOptions.title("마트")
+                currentMarker = mMap.addMarker(markerOptions)
+            }
+//            mMap.addCircle(circle)
+        }
+
+        if(mMoveMapByAPI){
+            var cameraUpdate = CameraUpdateFactory.newLatLng(currentLatLng)
+            mMap.moveCamera(cameraUpdate)
         }
     }
 
-    fun checkPermission(requestPermission:Array<String>):Boolean{
-        val requestResult = BooleanArray(requestPermission.size)
-        for(i in requestResult.indices){
-            requestResult[i] = ContextCompat.checkSelfPermission(this,requestPermission[i])==PackageManager.PERMISSION_GRANTED
-            if(!requestResult[i]){
-                return false
+    fun setDefaultLocation(){
+        mMoveMapByUser = false
+
+        var DEFAULT_LOCATION = LatLng(37.56,126.97)
+
+        if(currentMarker != null) currentMarker!!.remove()
+
+        var markerOptions = MarkerOptions()
+        markerOptions.position(DEFAULT_LOCATION)
+        markerOptions.title("초기값")
+        markerOptions.draggable(true)
+        currentMarker = mMap.addMarker(markerOptions)
+
+        var cameraUpdate = CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION,15f)
+        mMap.moveCamera(cameraUpdate)
+    }
+
+
+    fun checkPermissions(){
+        var fineLocationRationale = ActivityCompat.shouldShowRequestPermissionRationale(this,android.Manifest.permission.ACCESS_FINE_LOCATION)
+        var hasFineLocationPermission = ContextCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_FINE_LOCATION)
+
+        if(hasFineLocationPermission == PackageManager.PERMISSION_DENIED && fineLocationRationale){
+            showDialogForPermission("앱을 사용하려면 GPS사용을 활성화해야 합니다")
+        }else if(hasFineLocationPermission == PackageManager.PERMISSION_DENIED && !fineLocationRationale){
+            showDialogForPermission("설정에서 GPS사용을 활성화해주세요")
+        }else if(hasFineLocationPermission == PackageManager.PERMISSION_GRANTED){
+            if(mGoogleApiClient.isConnected == false){
+                mGoogleApiClient.connect()
             }
         }
-        return true
-    }
-
-    fun askPermission(requestPermission:Array<String>,REQ_PERMISSION:Int){
-        ActivityCompat.requestPermissions(this,requestPermission,REQ_PERMISSION)
     }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
-        permissions: Array<String>,
+        permissions: Array<out String>,
         grantResults: IntArray
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if(requestCode == PERMISSION_REQUEST_ACCESS_FINE_LOCATION && grantResults.size > 0){
+            var permissionAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED
+            if(permissionAccepted){
+                if(mGoogleApiClient.isConnected == false){
+                    mGoogleApiClient.connect()
+                }
+            }else{
+                checkPermissions()
+            }
+        }
+    }
+
+    fun showDialogForPermission(msg:String){
+        var builder = AlertDialog.Builder(this)
+        builder.setTitle("알림")
+        builder.setMessage(msg)
+        builder.setCancelable(false)
+        builder.setPositiveButton("예",DialogInterface.OnClickListener { dialogInterface, i ->
+            ActivityCompat.requestPermissions(this,permissionArray,PERMISSION_REQUEST_ACCESS_FINE_LOCATION)
+        })
+        builder.setNegativeButton("아니오",DialogInterface.OnClickListener { dialogInterface, i ->
+            finish()
+        })
+        builder.create().show()
+    }
+
+    fun showDialogForLocationServicesSetting(){
+        var builder = AlertDialog.Builder(this)
+        builder.setTitle("위치 서비스 설정")
+        builder.setMessage("앱을 사용하기 위해 위치 서비스가 필요합니다")
+        builder.setCancelable(true)
+        builder.setPositiveButton("설정",DialogInterface.OnClickListener { dialogInterface, i ->
+            var callGPSSettingIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            startActivityForResult(callGPSSettingIntent,GPS_ENABLE_REQUEST_CODE)
+        })
+        builder.setNegativeButton("취소",DialogInterface.OnClickListener { dialogInterface, i ->
+            dialogInterface.cancel()
+        })
+        builder.create().show()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
         when(requestCode){
-            PERMISSION_REQUEST_ACCESS_FINE_LOCATION->{
-                if(checkPermission(permissions)){
-                    //권한승인됨
-                }else{
-                    finish()
+            GPS_ENABLE_REQUEST_CODE->{
+                if(checkLocationServiesStatus()){
+                    if(mGoogleApiClient.isConnected == false){
+                        mGoogleApiClient.connect()
+                    }
+                    return
                 }
             }
         }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
-    //여기까지 권한 받아오는 코드(위에)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.example.myapplication.R.layout.activity_main2)
-        initPermission()
         setNavigation()
 
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val thread = JSONThread()
+        thread.start()//json파일 읽기 스레드
+
+        locationRequest.interval = UPDATE_INTERVAL_MS
+        locationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_MS
+
+        mGoogleApiClient = GoogleApiClient.Builder(this)
+            .addConnectionCallbacks(this)
+            .addOnConnectionFailedListener(this)
+            .addApi(LocationServices.API)
+            .build()
 
 
+    }
+
+
+
+    inner class JSONThread:Thread(){
+        override fun run() {
+            super.run()
+            readJSON()
+        }
     }
 
     fun setNavigation(){
@@ -155,6 +401,8 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback{
                 com.example.myapplication.R.id.search_menu->{
 //                    setFragment(2)
                     makeDialog(2)
+                    var mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+                    mapFragment.getMapAsync(this)
                 }
             }
             bottomNavigationView.menu.getItem(1).setChecked(true)//항상 검색이 선택되도록(화면꺼지고)
@@ -166,38 +414,30 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback{
         when(n){
             0->{
                 //이벤트 다이얼로그
-                var eventDialog = EventDialog(this)
-                eventDialog.show()
+
+                eventDialog = EventDialog(this)
+                eventDialog!!.show()
+
+                eventDialog!!.setOnCancelListener {
+
+                }
 
                 //크기 조절
-                DialogSize(eventDialog)
+                DialogSize(eventDialog!!)
             }
             2->{
                 //검색 다이얼로그
-                var searchDialog = SearchDialog(this)
-                searchDialog.show()
 
-                requestMyLocation()
-                //구글지도
-//                var fragmentManager = supportFragmentManager
-//                var map = fragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-//
-//                map!!.getMapAsync {
-//                    Log.d("확인","구글지도")
-//                    var SEOUL = LatLng(37.56, 126.97)
-//
-//                    var markerOption = MarkerOptions()
-//                    markerOption.position(SEOUL)
-//                    markerOption.title("서울")
-//                    markerOption.snippet("시발")
-//
-//                    it.addMarker(markerOption)
-//
-//                    it.moveCamera(CameraUpdateFactory.newLatLng(SEOUL))
-//                    it.animateCamera(CameraUpdateFactory.zoomTo(10f))
-//                }
+                searchDialog = SearchDialog(this)
+                searchDialog!!.show()
+
+                searchDialog!!.setOnCancelListener {
+                    var f2 = supportFragmentManager.beginTransaction()
+                    f2.remove(supportFragmentManager.findFragmentById(R.id.map)!!)
+                    f2.commit()
+                }
                 //크기조절
-                DialogSize(searchDialog)
+                DialogSize(searchDialog!!)
             }
         }
     }
@@ -232,64 +472,43 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback{
 
     //나의 위치 받아오는 함수
 
-    fun setMyLocation(){
-        var mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment!!.getMapAsync(this)
-    }
+    fun readJSON(){
 
-    fun requestMyLocation(){
-        Log.d("확인","requestMyLocation")
+        var geocoder = Geocoder(this)
 
-        //수동으로 위치 구하기
-        setMyLocation()
+        val assetManager = this.resources.assets
+        val inputStream = assetManager.open("서울시.json")
+        val jsonString = inputStream.bufferedReader().use { it.readText() }
 
-        if(ContextCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED)
-            return
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,100,10f,object:LocationListener{
-            override fun onLocationChanged(p0: Location?) {
-                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                Log.d("확인","onLocationChanged")
-                locationManager.removeUpdates(this)//나의 위치를 한번만 가져옴
+        val jObject = JSONObject(jsonString)//jsonObject로 변환
+        val jArray = jObject.getJSONArray("DATA")
 
-                latitude = p0!!.latitude
-                longitude = p0!!.longitude
-                Log.d("확인",latitude.toString())
-                Log.d("확인",longitude.toString())
+        for (i in 0 until jArray.length()){
+            val obj = jArray.getJSONObject(i)
+//            Log.d("json",obj.toString())
+            //분류가 대형마트인 것만 가져옴
+            if(obj.getString("uptae_code").equals("대형마트") && obj.getString("mng_state_code").equals("영업중") && obj.getString("trnm_nm").contains("이마트")){
+//                Log.d("대형마트",obj.getString("trnm_nm"))
+                var geoAddress = geocoder.getFromLocationName(obj.getString("trnm_nm"),10)
+                Log.d("대형마트",geoAddress.toString())
+                if(geoAddress.size != 0){
+                    //데이터가 조회되면
+                    //정규식
+                    var latitudeStr = geoAddress.get(0).toString().substringAfter("latitude=")
+                    latitudeStr = latitudeStr.substringBefore(",")
+                    var latitude = latitudeStr.toDouble()
+                    var longitudeStr = geoAddress.get(0).toString().substringAfter("longitude=")
+                    longitudeStr = longitudeStr.substringBefore(",")
+                    var longitude = longitudeStr.toDouble()
 
-                var fragmentManager = supportFragmentManager
-                var map = fragmentManager.findFragmentById(R.id.map) as SupportMapFragment
 
-                map!!.getMapAsync {
-                    var position = LatLng(latitude,longitude)
-                    var markerOption = MarkerOptions()
-                    markerOption.position(position)
-                    markerOption.title("서울")
-                    markerOption.snippet("시발")
+                    Log.d("위치",latitude.toString()+ " "+longitude.toString())
+                    martArray.add(mart(obj.getString("trnm_nm"),latitude,longitude))
 
-                    it.addMarker(markerOption)
 
-                    var center = CameraUpdateFactory.newLatLngZoom(position,17f) as CameraUpdate
-
-                    it.moveCamera(center)
-                    it.animateCamera(CameraUpdateFactory.zoomTo(17f))
                 }
-                locationManager.removeUpdates(this)
             }
-
-            override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
-                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onProviderEnabled(p0: String?) {
-                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onProviderDisabled(p0: String?) {
-                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-        })
+        }
     }
-
 
 }

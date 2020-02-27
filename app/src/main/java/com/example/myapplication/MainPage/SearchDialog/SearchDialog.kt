@@ -47,6 +47,7 @@ class SearchDialog(context: Context) : Dialog(context){
     var database = FirebaseDatabase.getInstance() as FirebaseDatabase
     var myRef = database.reference
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         var v = R.layout.search_dialog
@@ -80,6 +81,12 @@ class SearchDialog(context: Context) : Dialog(context){
         }
 
 
+
+    }
+
+    override fun cancel() {
+        super.cancel()
+        Log.d("종료","종료")
 
     }
 
