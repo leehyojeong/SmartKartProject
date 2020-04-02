@@ -28,7 +28,20 @@ import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import com.amazonaws.auth.CognitoCachingCredentialsProvider
+import com.amazonaws.mobile.client.AWSMobileClient
+import com.amazonaws.mobile.client.AWSStartupHandler
+import com.amazonaws.mobile.config.AWSConfiguration
+import com.amazonaws.mobileconnectors.appsync.AWSAppSyncClient
+import com.amazonaws.mobileconnectors.dynamodbv2.document.Table
+import com.amazonaws.mobileconnectors.dynamodbv2.document.datatype.Primitive
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBScanExpression
+import com.amazonaws.regions.Region
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.example.myapplication.CodePage.CodeFragment
+import com.example.myapplication.Data.MartData
 import com.example.myapplication.MainPage.EventDialog.EventDialog
 import com.example.myapplication.MainPage.SearchDialog.SearchDialog
 import com.example.myapplication.R
@@ -46,6 +59,7 @@ import java.util.jar.Manifest
 import kotlin.collections.ArrayList
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.maps.model.*
+
 
 class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,LocationListener{
 
@@ -88,7 +102,6 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
 
     override fun onConnected(p0: Bundle?) {
       //  TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-
     }
 
     override fun onConnectionSuspended(p0: Int) {
@@ -157,6 +170,12 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
 
     var martAddress = arrayListOf("서울특별시 송파구 충민로 10","서울특별시 노원구 마들로3길 15","서울 도봉구 노해로 65길 4")
 
+
+    //dynamodb
+    var dynamoDBMapper:DynamoDBMapper ?= null
+    var ddb :AmazonDynamoDBClient ?= null
+    lateinit var credentials:CognitoCachingCredentialsProvider
+
     //지도
     fun startLocationUpdates(){
         Log.d("확인","startLocationUpdates")
@@ -207,17 +226,6 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
 
         var currentLatLng = LatLng(location.latitude,location.longitude)
 
-//        var markerOptions = MarkerOptions()
-//        markerOptions.position(currentLatLng)
-//        markerOptions.title("나")
-//        markerOptions.draggable(true)
-//
-//        currentMarker = mMap.addMarker(markerOptions)
-        //반경
-//        var circle = CircleOptions().center(currentLatLng)
-//            .radius(3000.0)
-//            .strokeWidth(0f)
-//            .fillColor(Color.parseColor("#FFBB00ff"))
         //나의 좌표
         var myLocation = Location("나")
         myLocation.latitude = location.latitude
@@ -365,10 +373,28 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
             .addApi(LocationServices.API)
             .build()
 
+//        ddb!!.setRegion(Region.getRegion(Regions.AP_NORTHEAST_2))
 
+        credentials = CognitoCachingCredentialsProvider(this,"ap-northeast-2:1140fa47-3059-4bdb-a382-25735d00f34d", Regions.AP_NORTHEAST_2)
+        ddb = AmazonDynamoDBClient(credentials)
+        ddb!!.setRegion((Region.getRegion(Regions.AP_NORTHEAST_2)))
+        Log.d("아마존",ddb.toString())
+        dynamoDBMapper = DynamoDBMapper.builder().dynamoDBClient(ddb).build()
+
+        val AWSthread = AWSThread()
+        AWSthread.start()
     }
 
+    //dynamoDB
+    inner class AWSThread:Thread(){
+        override fun run() {
+            super.run()
 
+            //모든 데이터 가져옴
+            var list = dynamoDBMapper!!.scan(MartData::class.java, DynamoDBScanExpression())
+            Log.d("아마존 데이터",list[0].getMartName())
+        }
+    }
 
     inner class JSONThread:Thread(){
         override fun run() {
@@ -504,11 +530,8 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
 
                     Log.d("위치",latitude.toString()+ " "+longitude.toString())
                     martArray.add(mart(obj.getString("trnm_nm"),latitude,longitude))
-
-
                 }
             }
         }
     }
-
 }
