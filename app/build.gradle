@@ -63,4 +63,11 @@ dependencies {
     implementation 'com.amazonaws:aws-android-sdk-auth-userpools:2.8.+@aar'
     implementation 'com.amazonaws:aws-android-sdk-auth-ui:2.8.+@aar'
     implementation 'com.amazonaws:aws-android-sdk-ddb-mapper:2.7.+'
+
+
+    implementation 'com.github.bumptech.glide:glide:4.9.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
+
+
+    implementation 'com.koushikdutta.ion:ion:2.+'
 }

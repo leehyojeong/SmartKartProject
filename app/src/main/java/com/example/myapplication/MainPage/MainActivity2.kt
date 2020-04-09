@@ -15,6 +15,7 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
+import android.util.EventLog
 import android.util.Log
 import android.view.Display
 import android.view.MenuItem
@@ -37,11 +38,15 @@ import com.amazonaws.mobileconnectors.dynamodbv2.document.Table
 import com.amazonaws.mobileconnectors.dynamodbv2.document.datatype.Primitive
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBScanExpression
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedList
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedScanList
 import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.example.myapplication.CodePage.CodeFragment
+import com.example.myapplication.Data.EventData
 import com.example.myapplication.Data.MartData
+import com.example.myapplication.Data.MyLocation
 import com.example.myapplication.MainPage.EventDialog.EventDialog
 import com.example.myapplication.MainPage.SearchDialog.SearchDialog
 import com.example.myapplication.R
@@ -70,6 +75,7 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
 
         setCurrentLocation(p0!!)
         mCurrentLocation = p0!!
+        Log.d("권한","OnLocationChanged")
     }
 
     override fun onMapReady(p0: GoogleMap?) {
@@ -98,6 +104,7 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
 
         }
         startLocationUpdates()
+        Log.d("권한","OnMapReady")
     }
 
     override fun onConnected(p0: Bundle?) {
@@ -138,7 +145,10 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
 
 
     //대형마트 정보
-    var martArray:ArrayList<mart> = arrayListOf()
+//    var martArray:ArrayList<mart> = arrayListOf()
+     var martDataArray:PaginatedList<MartData> ?= null
+    var eventDataArray:PaginatedList<EventData> ?= null
+    var martDataLocation:ArrayList<MyLocation> = arrayListOf()
 
 
     //현재위치
@@ -167,10 +177,6 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
     var searchDialog:Dialog ?= null
 
 
-
-    var martAddress = arrayListOf("서울특별시 송파구 충민로 10","서울특별시 노원구 마들로3길 15","서울 도봉구 노해로 65길 4")
-
-
     //dynamodb
     var dynamoDBMapper:DynamoDBMapper ?= null
     var ddb :AmazonDynamoDBClient ?= null
@@ -178,7 +184,7 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
 
     //지도
     fun startLocationUpdates(){
-        Log.d("확인","startLocationUpdates")
+        Log.d("권한","startLocationUpdates")
         if(!checkLocationServiesStatus()){
             showDialogForLocationServicesSetting()
         }else{
@@ -198,22 +204,8 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
         mRequestingLocationUpdates = false
     }
 
-    fun getCurrentAddress(latlng:LatLng):String?{
-        var geocoder = Geocoder(this,Locale.getDefault())
-
-        var address = arrayListOf<Address>()
-        address = geocoder.getFromLocation(latlng.latitude,latlng.longitude,1) as ArrayList<Address>
-
-        if(address == null || address.size == 0){
-            return null
-        }else{
-            var add = address.get(0)
-            return add.getAddressLine(0).toString()
-        }
-
-    }
-
     fun checkLocationServiesStatus():Boolean{
+        Log.d("권한","checkLocationServiesStatus")
         var locationmanager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
         return locationmanager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationmanager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
@@ -231,29 +223,34 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
         myLocation.latitude = location.latitude
         myLocation.longitude = location.longitude
 
+        var myLoc = MarkerOptions()
+        myLoc.position(currentLatLng)
+        myLoc.title("현재 위치")
+        mMap.addMarker(myLoc)
+
+        Log.d("권한", "나의 현재 위치 $location")
+
         //마트 좌표 찍기
-        var geocoder = Geocoder(this,Locale.getDefault())
-        for (i in martAddress){
+        for (i in 0..martDataArray!!.size-1){
+
+            Log.d("마트좌표",martDataLocation[i].toString())
+            if(martDataLocation[i].latitude == 0.0){
+                continue
+            }
             var markerOptions = MarkerOptions()
 
-            var addresses = arrayListOf<Address>()
-            addresses = geocoder.getFromLocationName(i,1) as ArrayList<Address>
-
-            var latitude = addresses.get(0).latitude
-            var longitude = addresses.get(0).longitude
-
-            //마트 좌표
-            var martLocation = Location("마트")
-            martLocation.latitude = latitude
-            martLocation.longitude = longitude
-
-            if(myLocation.distanceTo(martLocation) <= 3000){
-                var latlng = LatLng(latitude,longitude)
+//
+//            //마트 좌표
+            var martLocation = Location(martDataArray!![i].name)
+            martLocation.latitude = martDataLocation[i].latitude!!
+            martLocation.longitude = martDataLocation[i].longitude!!
+//
+            if(myLocation.distanceTo(martLocation) <= 300000000){
+                var latlng = LatLng(martDataLocation[i].latitude!!,martDataLocation[i].longitude!!)
                 markerOptions.position(latlng)
-                markerOptions.title("마트")
+                markerOptions.title(martDataArray!![i].getMartName())
                 currentMarker = mMap.addMarker(markerOptions)
             }
-//            mMap.addCircle(circle)
         }
 
         if(mMoveMapByAPI){
@@ -277,6 +274,7 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
 
         var cameraUpdate = CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION,15f)
         mMap.moveCamera(cameraUpdate)
+        Log.d("권한","SetDefaultLocation")
     }
 
 
@@ -286,11 +284,14 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
 
         if(hasFineLocationPermission == PackageManager.PERMISSION_DENIED && fineLocationRationale){
             showDialogForPermission("앱을 사용하려면 GPS사용을 활성화해야 합니다")
+            Log.d("권한","앱을 사용하려면 GPS사용활성화")
         }else if(hasFineLocationPermission == PackageManager.PERMISSION_DENIED && !fineLocationRationale){
             showDialogForPermission("설정에서 GPS사용을 활성화해주세요")
+            Log.d("권한","설정에서 GPS활성화 해주세요")
         }else if(hasFineLocationPermission == PackageManager.PERMISSION_GRANTED){
             if(mGoogleApiClient.isConnected == false){
                 mGoogleApiClient.connect()
+                Log.d("권한","권한 허용")
             }
         }
     }
@@ -359,10 +360,7 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.example.myapplication.R.layout.activity_main2)
-        setNavigation()
 
-        val thread = JSONThread()
-        thread.start()//json파일 읽기 스레드
 
         locationRequest.interval = UPDATE_INTERVAL_MS
         locationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_MS
@@ -373,8 +371,7 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
             .addApi(LocationServices.API)
             .build()
 
-//        ddb!!.setRegion(Region.getRegion(Regions.AP_NORTHEAST_2))
-
+        //아마존 데이터 읽어오기
         credentials = CognitoCachingCredentialsProvider(this,"ap-northeast-2:1140fa47-3059-4bdb-a382-25735d00f34d", Regions.AP_NORTHEAST_2)
         ddb = AmazonDynamoDBClient(credentials)
         ddb!!.setRegion((Region.getRegion(Regions.AP_NORTHEAST_2)))
@@ -383,6 +380,8 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
 
         val AWSthread = AWSThread()
         AWSthread.start()
+
+        setNavigation()
     }
 
     //dynamoDB
@@ -391,25 +390,37 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
             super.run()
 
             //모든 데이터 가져옴
-            var list = dynamoDBMapper!!.scan(MartData::class.java, DynamoDBScanExpression())
-            Log.d("아마존 데이터",list[0].getMartName())
+            martDataArray = dynamoDBMapper!!.scan(MartData::class.java, DynamoDBScanExpression())
+            eventDataArray = dynamoDBMapper!!.scan(EventData::class.java, DynamoDBScanExpression())
+
+            Log.d("아마존 데이터", eventDataArray!!.get(0).getEventName())
+            //마트들의 좌표도 받아옴
+            var geocoder = Geocoder(applicationContext,Locale.getDefault())
+            for (i in martDataArray!!) {
+                var markerOptions = MarkerOptions()
+
+                var addresses = arrayListOf<Address>()
+                addresses = geocoder.getFromLocationName(i.getMartRoad(), 1) as ArrayList<Address>
+
+                if (addresses.size == 0) {
+                    martDataLocation.add(MyLocation(0.0,0.0))
+                    continue
+                }
+                var latitude = addresses.get(0).latitude
+                var longitude = addresses.get(0).longitude
+                Log.d("아마존 ", latitude.toString()+" "+longitude.toString())
+                martDataLocation.add(MyLocation(latitude,longitude))
+              }
+            Log.d("아마존",martDataArray!!.size.toString()+" "+martDataLocation.size.toString())
         }
     }
 
-    inner class JSONThread:Thread(){
-        override fun run() {
-            super.run()
-            readJSON()
-        }
-    }
 
     fun setNavigation(){
         mainFrag = MainFragment()
         codeFrag = CodeFragment()
 
-//        bottomNavigationView.menu.getItem(0).setChecked(false)
         bottomNavigationView.menu.getItem(1).setChecked(true)
-//        bottomNavigationView.menu.getItem(2).setChecked(false)
 
         setFragment(1)//초기에는 메인프래그먼트
 
@@ -441,7 +452,7 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
             0->{
                 //이벤트 다이얼로그
 
-                eventDialog = EventDialog(this)
+                eventDialog = EventDialog(this,eventDataArray!!)
                 eventDialog!!.show()
 
                 eventDialog!!.setOnCancelListener {
@@ -482,55 +493,16 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
         window!!.setLayout(x,y)
     }
 
-    fun setFragment(n:Int){
+    fun setFragment(n:Int) {
         //프래그먼트 페이지 설정
         fm = supportFragmentManager
         ft = fm.beginTransaction()
 
-        when(n){
-            1->{
+        when (n) {
+            1 -> {
                 //연동코드 입력 프래그먼트
-                ft.replace(com.example.myapplication.R.id.frameLayout,codeFrag)
+                ft.replace(com.example.myapplication.R.id.frameLayout, codeFrag)
                 ft.commit()
-            }
-        }
-    }
-
-    //나의 위치 받아오는 함수
-
-    fun readJSON(){
-
-        var geocoder = Geocoder(this)
-
-        val assetManager = this.resources.assets
-        val inputStream = assetManager.open("서울시.json")
-        val jsonString = inputStream.bufferedReader().use { it.readText() }
-
-        val jObject = JSONObject(jsonString)//jsonObject로 변환
-        val jArray = jObject.getJSONArray("DATA")
-
-        for (i in 0 until jArray.length()){
-            val obj = jArray.getJSONObject(i)
-//            Log.d("json",obj.toString())
-            //분류가 대형마트인 것만 가져옴
-            if(obj.getString("uptae_code").equals("대형마트") && obj.getString("mng_state_code").equals("영업중") && obj.getString("trnm_nm").contains("이마트")){
-//                Log.d("대형마트",obj.getString("trnm_nm"))
-                var geoAddress = geocoder.getFromLocationName(obj.getString("trnm_nm"),10)
-                Log.d("대형마트",geoAddress.toString())
-                if(geoAddress.size != 0){
-                    //데이터가 조회되면
-                    //정규식
-                    var latitudeStr = geoAddress.get(0).toString().substringAfter("latitude=")
-                    latitudeStr = latitudeStr.substringBefore(",")
-                    var latitude = latitudeStr.toDouble()
-                    var longitudeStr = geoAddress.get(0).toString().substringAfter("longitude=")
-                    longitudeStr = longitudeStr.substringBefore(",")
-                    var longitude = longitudeStr.toDouble()
-
-
-                    Log.d("위치",latitude.toString()+ " "+longitude.toString())
-                    martArray.add(mart(obj.getString("trnm_nm"),latitude,longitude))
-                }
             }
         }
     }
