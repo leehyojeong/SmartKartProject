@@ -47,6 +47,7 @@ import com.example.myapplication.CodePage.CodeFragment
 import com.example.myapplication.Data.EventData
 import com.example.myapplication.Data.MartData
 import com.example.myapplication.Data.MyLocation
+import com.example.myapplication.LoadingActivity
 import com.example.myapplication.MainPage.EventDialog.EventDialog
 import com.example.myapplication.MainPage.SearchDialog.SearchDialog
 import com.example.myapplication.R
@@ -371,49 +372,9 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
             .addApi(LocationServices.API)
             .build()
 
-        //아마존 데이터 읽어오기
-        credentials = CognitoCachingCredentialsProvider(this,"ap-northeast-2:1140fa47-3059-4bdb-a382-25735d00f34d", Regions.AP_NORTHEAST_2)
-        ddb = AmazonDynamoDBClient(credentials)
-        ddb!!.setRegion((Region.getRegion(Regions.AP_NORTHEAST_2)))
-        Log.d("아마존",ddb.toString())
-        dynamoDBMapper = DynamoDBMapper.builder().dynamoDBClient(ddb).build()
-
-        val AWSthread = AWSThread()
-        AWSthread.start()
-
         setNavigation()
     }
 
-    //dynamoDB
-    inner class AWSThread:Thread(){
-        override fun run() {
-            super.run()
-
-            //모든 데이터 가져옴
-            martDataArray = dynamoDBMapper!!.scan(MartData::class.java, DynamoDBScanExpression())
-            eventDataArray = dynamoDBMapper!!.scan(EventData::class.java, DynamoDBScanExpression())
-
-            Log.d("아마존 데이터", eventDataArray!!.get(0).getEventName())
-            //마트들의 좌표도 받아옴
-            var geocoder = Geocoder(applicationContext,Locale.getDefault())
-            for (i in martDataArray!!) {
-                var markerOptions = MarkerOptions()
-
-                var addresses = arrayListOf<Address>()
-                addresses = geocoder.getFromLocationName(i.getMartRoad(), 1) as ArrayList<Address>
-
-                if (addresses.size == 0) {
-                    martDataLocation.add(MyLocation(0.0,0.0))
-                    continue
-                }
-                var latitude = addresses.get(0).latitude
-                var longitude = addresses.get(0).longitude
-                Log.d("아마존 ", latitude.toString()+" "+longitude.toString())
-                martDataLocation.add(MyLocation(latitude,longitude))
-              }
-            Log.d("아마존",martDataArray!!.size.toString()+" "+martDataLocation.size.toString())
-        }
-    }
 
 
     fun setNavigation(){

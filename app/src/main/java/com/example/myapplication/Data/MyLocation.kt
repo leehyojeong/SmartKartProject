@@ -1,4 +1,4 @@
 package com.example.myapplication.Data
 
-data class MyLocation(var latitude:Double, var longitude:Double) {
+data class MyLocation(var latitude:Double, var longitude:Double, var name:String) {
 }
