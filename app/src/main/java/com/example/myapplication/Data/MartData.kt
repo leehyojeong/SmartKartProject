@@ -4,9 +4,10 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBAttribut
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBHashKey
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBRangeKey
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBTable
+import java.io.Serializable
 
 @DynamoDBTable(tableName = "mart")
-class MartData {
+class MartData:Serializable {
 
     lateinit var name:String
     lateinit var road:String

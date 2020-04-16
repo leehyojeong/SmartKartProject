@@ -1,4 +1,4 @@
-package com.example.myapplication.MainPage.EventDialog
+package com.example.myapplication.MainDialog.EventDialog
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,11 +7,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedList
-import com.example.myapplication.BuyPage.ItemListAdapter
-import com.example.myapplication.Data.EventData
+import com.example.myapplication.Data.EventItem
 import com.example.myapplication.R
-import com.koushikdutta.ion.Ion
 
 class EventListAdapter(val context: Context,var items:ArrayList<EventItem> ) :RecyclerView.Adapter<EventListAdapter.ViewHolder>(){
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventListAdapter.ViewHolder {

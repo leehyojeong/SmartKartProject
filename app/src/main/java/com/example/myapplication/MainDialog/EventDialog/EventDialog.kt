@@ -1,34 +1,29 @@
-package com.example.myapplication.MainPage.EventDialog
+package com.example.myapplication.MainDialog.EventDialog
 
 import android.app.Dialog
 import android.content.Context
-import android.graphics.BitmapFactory
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
-import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.ViewFlipper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedList
-import com.bumptech.glide.Glide
 import com.example.myapplication.Data.EventData
+import com.example.myapplication.Data.EventItem
 import com.example.myapplication.R
 import com.koushikdutta.ion.Ion
 import kotlinx.android.synthetic.main.event_dialog.*
-import java.net.HttpURLConnection
-import java.net.URL
-import kotlin.coroutines.coroutineContext
 
-class EventDialog(context: Context, argeventList:PaginatedList<EventData>) : Dialog(context) {
+class EventDialog(context: Context, argeventList:ArrayList<EventItem>) : Dialog(context) {
 
     val images = arrayListOf(R.drawable.eventimage1, R.drawable.eventimage2, R.drawable.eventimage3)
-    var eventList:PaginatedList<EventData> = argeventList
+    var eventList:ArrayList<EventItem> = argeventList
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,20 +47,15 @@ class EventDialog(context: Context, argeventList:PaginatedList<EventData>) : Dia
 
     fun setInit(){
         for(image in 0..3){
-            changeImage(eventList[image].getEventImg(),eventList[image].getEventName())
+            changeImage(eventList[image].img,eventList[image].name)
         }
-        var eventListBit  = arrayListOf<EventItem>()
-        for(event in eventList!!){
-            var bit = Ion.with(context).load("http:"+event.getEventImg()).asBitmap().get()
-            eventListBit.add(EventItem(event.getEventName(),bit))
-        }
-        var adapter = EventListAdapter(context,eventListBit)
+        var adapter = EventListAdapter(context,eventList)
         val layoutManager = LinearLayoutManager(context!!, LinearLayoutManager.VERTICAL,false)
         event_list_view.layoutManager = layoutManager
         event_list_view.adapter = adapter
     }
 
-    fun changeImage(image:String,title:String){
+    fun changeImage(image:Bitmap,title:String){
         var context = context!!.applicationContext
         val eventLayout = LinearLayout(context)
         eventLayout.orientation = LinearLayout.VERTICAL
@@ -75,8 +65,7 @@ class EventDialog(context: Context, argeventList:PaginatedList<EventData>) : Dia
         val imageView = ImageView(context)
         Log.d("이벤트","http:"+image)
 
-        var img = Ion.with(context).load("http:$image").asBitmap().get()
-        imageView.setImageBitmap(img)
+        imageView.setImageBitmap(image)
 
         textView.text = title
 

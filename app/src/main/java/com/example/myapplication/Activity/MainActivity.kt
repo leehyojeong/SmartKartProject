@@ -1,74 +1,110 @@
-package com.example.myapplication.MainPage
+package com.example.myapplication.Activity
 
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.app.Application
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.graphics.Point
 import android.location.*
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
-import android.util.EventLog
 import android.util.Log
-import android.view.Display
-import android.view.MenuItem
-import android.view.View
-import android.view.WindowManager
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.getSystemService
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.amazonaws.auth.CognitoCachingCredentialsProvider
-import com.amazonaws.mobile.client.AWSMobileClient
-import com.amazonaws.mobile.client.AWSStartupHandler
-import com.amazonaws.mobile.config.AWSConfiguration
-import com.amazonaws.mobileconnectors.appsync.AWSAppSyncClient
-import com.amazonaws.mobileconnectors.dynamodbv2.document.Table
-import com.amazonaws.mobileconnectors.dynamodbv2.document.datatype.Primitive
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBScanExpression
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedList
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedScanList
-import com.amazonaws.regions.Region
-import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.example.myapplication.CodePage.CodeFragment
 import com.example.myapplication.Data.EventData
+import com.example.myapplication.Data.EventItem
 import com.example.myapplication.Data.MartData
 import com.example.myapplication.Data.MyLocation
-import com.example.myapplication.LoadingActivity
-import com.example.myapplication.MainPage.EventDialog.EventDialog
-import com.example.myapplication.MainPage.SearchDialog.SearchDialog
+import com.example.myapplication.MainDialog.EventDialog.EventDialog
+import com.example.myapplication.MainDialog.SearchDialog.SearchDialog
 import com.example.myapplication.R
 import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.api.GoogleApi
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
 import kotlinx.android.synthetic.main.activity_main2.*
-import kotlinx.android.synthetic.main.search_dialog.*
-import org.json.JSONObject
-import java.util.*
-import java.util.jar.Manifest
 import kotlin.collections.ArrayList
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.maps.model.*
 
 
-class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,LocationListener{
+class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,LocationListener{
 
+    //DATA
+    //for application
+    var martDataLocation:ArrayList<MyLocation> = arrayListOf()
+    var eventData:ArrayList<EventItem> = arrayListOf()
+    //for map
+    val UPDATE_INTERVAL_MS:Long = 100
+    val FASTEST_UPDATE_INTERVAL_MS:Long = 50
+    lateinit var mGoogleApiClient:GoogleApiClient
+    lateinit var mMap:GoogleMap
+    var mRequestingLocationUpdates:Boolean = false
+    var mRequestLocationUpdates = false
+    var mMoveMapByAPI = true
+    var mMoveMapByUser = true
+    lateinit var mCurrentLocation:Location
+    lateinit var currentPosition:LatLng
+    var currentMarker:Marker ?= null
+    var locationRequest = LocationRequest()
+        .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+    //for permission
+    var permissionArray = arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION)
+    val PERMISSION_REQUEST_ACCESS_FINE_LOCATION= 2002
+    val GPS_ENABLE_REQUEST_CODE = 2001
+
+    //Fragment Variable
+    lateinit var mainFrag: MainFragment
+    lateinit var codeFrag:CodeFragment
+    lateinit var fm:FragmentManager
+    lateinit var  ft:FragmentTransaction
+
+    //Dialog Variable
+    var eventDialog:Dialog ?= null
+    var searchDialog:Dialog ?= null
+
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main2)
+
+
+        getIntentData()
+
+        locationRequest.interval = UPDATE_INTERVAL_MS
+        locationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_MS
+
+        mGoogleApiClient = GoogleApiClient.Builder(this)
+            .addConnectionCallbacks(this)
+            .addOnConnectionFailedListener(this)
+            .addApi(LocationServices.API)
+            .build()
+
+        setNavigation()
+    }
+
+    //get Data
+    fun getIntentData(){
+        var intent = getIntent()
+        martDataLocation = intent.getSerializableExtra("MART_DATA") as ArrayList<MyLocation>
+        eventData = intent.getParcelableArrayListExtra("EVENT_DATA")
+        Log.d("인텐트",martDataLocation.size.toString()+" "+eventData.size.toString())
+    }
+
+
+    //MAP
     override fun onLocationChanged(p0: Location?) {
         //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         Log.d("확인","onLocationChanged")
@@ -138,52 +174,6 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
         super.onStop()
     }
 
-    lateinit var mainFrag:MainFragment
-    lateinit var codeFrag:CodeFragment
-    lateinit var fm:FragmentManager
-    lateinit var  ft:FragmentTransaction
-
-
-
-    //대형마트 정보
-//    var martArray:ArrayList<mart> = arrayListOf()
-     var martDataArray:PaginatedList<MartData> ?= null
-    var eventDataArray:PaginatedList<EventData> ?= null
-    var martDataLocation:ArrayList<MyLocation> = arrayListOf()
-
-
-    //현재위치
-    var permissionArray = arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION)
-    val PERMISSION_REQUEST_ACCESS_FINE_LOCATION= 2002
-    val GPS_ENABLE_REQUEST_CODE = 2001
-    val UPDATE_INTERVAL_MS:Long = 100
-    val FASTEST_UPDATE_INTERVAL_MS:Long = 50
-    lateinit var mGoogleApiClient:GoogleApiClient
-     var mLocationPermissionGranted:Boolean = false
-    lateinit var mMap:GoogleMap
-    var mRequestingLocationUpdates:Boolean = false
-    var mLastKnownLocation:Location ?= null
-    var askPermissionOnceAgain = false
-    var mRequestLocationUpdates = false
-    var mMoveMapByAPI = true
-    var mMoveMapByUser = true
-    lateinit var mCurrentLocation:Location
-    lateinit var currentPosition:LatLng
-    var currentMarker:Marker ?= null
-
-    var locationRequest = LocationRequest()
-        .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-
-    var eventDialog:Dialog ?= null
-    var searchDialog:Dialog ?= null
-
-
-    //dynamodb
-    var dynamoDBMapper:DynamoDBMapper ?= null
-    var ddb :AmazonDynamoDBClient ?= null
-    lateinit var credentials:CognitoCachingCredentialsProvider
-
-    //지도
     fun startLocationUpdates(){
         Log.d("권한","startLocationUpdates")
         if(!checkLocationServiesStatus()){
@@ -232,7 +222,7 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
         Log.d("권한", "나의 현재 위치 $location")
 
         //마트 좌표 찍기
-        for (i in 0..martDataArray!!.size-1){
+        for (i in 0..martDataLocation!!.size-1){
 
             Log.d("마트좌표",martDataLocation[i].toString())
             if(martDataLocation[i].latitude == 0.0){
@@ -240,16 +230,16 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
             }
             var markerOptions = MarkerOptions()
 
-//
-//            //마트 좌표
-            var martLocation = Location(martDataArray!![i].name)
+
+            //마트 좌표
+            var martLocation = Location(martDataLocation!![i].name)
             martLocation.latitude = martDataLocation[i].latitude!!
             martLocation.longitude = martDataLocation[i].longitude!!
-//
+
             if(myLocation.distanceTo(martLocation) <= 300000000){
                 var latlng = LatLng(martDataLocation[i].latitude!!,martDataLocation[i].longitude!!)
                 markerOptions.position(latlng)
-                markerOptions.title(martDataArray!![i].getMartName())
+                markerOptions.title(martDataLocation!![i].name)
                 currentMarker = mMap.addMarker(markerOptions)
             }
         }
@@ -279,6 +269,7 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
     }
 
 
+    //Permission
     fun checkPermissions(){
         var fineLocationRationale = ActivityCompat.shouldShowRequestPermissionRationale(this,android.Manifest.permission.ACCESS_FINE_LOCATION)
         var hasFineLocationPermission = ContextCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -344,6 +335,7 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
         builder.create().show()
     }
 
+    //GPS setting
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when(requestCode){
@@ -358,25 +350,7 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(com.example.myapplication.R.layout.activity_main2)
-
-
-        locationRequest.interval = UPDATE_INTERVAL_MS
-        locationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_MS
-
-        mGoogleApiClient = GoogleApiClient.Builder(this)
-            .addConnectionCallbacks(this)
-            .addOnConnectionFailedListener(this)
-            .addApi(LocationServices.API)
-            .build()
-
-        setNavigation()
-    }
-
-
-
+    //NavigationBar
     fun setNavigation(){
         mainFrag = MainFragment()
         codeFrag = CodeFragment()
@@ -389,15 +363,13 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
 
         bottomNavigationView.setOnNavigationItemSelectedListener {
             when(it.itemId){
-                com.example.myapplication.R.id.event_menu->{
-//                    setFragment(0)
+                R.id.event_menu->{
                     makeDialog(0)
                 }
-                com.example.myapplication.R.id.cart_menu->{
+                R.id.cart_menu->{
                     setFragment(1)
                 }
-                com.example.myapplication.R.id.search_menu->{
-//                    setFragment(2)
+                R.id.search_menu->{
                     makeDialog(2)
                     var mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
                     mapFragment.getMapAsync(this)
@@ -408,27 +380,23 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
         }
     }
 
+    //DIalog
     fun makeDialog(n:Int){
         when(n){
             0->{
                 //이벤트 다이얼로그
-
-                eventDialog = EventDialog(this,eventDataArray!!)
+                eventDialog = EventDialog(this,eventData!!)
                 eventDialog!!.show()
-
                 eventDialog!!.setOnCancelListener {
 
                 }
-
                 //크기 조절
                 DialogSize(eventDialog!!)
             }
             2->{
                 //검색 다이얼로그
-
                 searchDialog = SearchDialog(this)
                 searchDialog!!.show()
-
                 searchDialog!!.setOnCancelListener {
                     var f2 = supportFragmentManager.beginTransaction()
                     f2.remove(supportFragmentManager.findFragmentById(R.id.map)!!)
@@ -454,6 +422,7 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
         window!!.setLayout(x,y)
     }
 
+    //Fragment
     fun setFragment(n:Int) {
         //프래그먼트 페이지 설정
         fm = supportFragmentManager
@@ -462,7 +431,7 @@ class MainActivity2 : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Con
         when (n) {
             1 -> {
                 //연동코드 입력 프래그먼트
-                ft.replace(com.example.myapplication.R.id.frameLayout, codeFrag)
+                ft.replace(R.id.frameLayout, codeFrag)
                 ft.commit()
             }
         }

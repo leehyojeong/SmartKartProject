@@ -1,12 +1,12 @@
-package com.example.myapplication
+package com.example.myapplication.Activity
 
+import android.content.Intent
 import android.location.Address
 import android.location.Geocoder
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
-import android.os.Message
 import android.util.Log
 import com.amazonaws.auth.CognitoCachingCredentialsProvider
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper
@@ -16,9 +16,11 @@ import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.example.myapplication.Data.EventData
+import com.example.myapplication.Data.EventItem
 import com.example.myapplication.Data.MartData
 import com.example.myapplication.Data.MyLocation
-import com.example.myapplication.MainPage.mart
+import com.example.myapplication.R
+import com.koushikdutta.ion.Ion
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
@@ -36,6 +38,8 @@ class LoadingActivity : AppCompatActivity() {
     var martDataArray:PaginatedList<MartData> ?= null
     var eventDataArray:PaginatedList<EventData> ?= null
     var martDataLocation:ArrayList<MyLocation> = arrayListOf()
+    var eventData:ArrayList<EventItem> = arrayListOf()
+
 
     //Handler
     lateinit var handler:Handler
@@ -71,16 +75,33 @@ class LoadingActivity : AppCompatActivity() {
                     //데이터를 다 불러옴
                     Log.d("스레드","GET_DATA")
                     DataConvertInit()
+                    StringtoImage()
                 }
                 DATA_TO_LOCATION->{
                     //데이터를 경도 위도 좌표로 변환
                     Log.d("스레드",martDataLocation.size.toString())
+                    //모든 데이터를 받아왔으므로 액티비티 전환
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.putExtra("MART_DATA",martDataLocation)
+                    intent.putExtra("EVENT_DATA",eventData)
+                    startActivity(intent)
                 }
             }
             return@Callback true
         })
+    }
 
+    fun StringtoImage(){
+        //이미지로 변환해주는 함수
+        for(event in eventDataArray!!){
+            var bit = Ion.with(this).load("http:"+event.getEventImg()).asBitmap().get()
+            eventData.add(EventItem(event.getEventName(), bit))
+        }
 
+        //핸들러 메세지
+        var message = handler.obtainMessage()
+        message.arg1 = DATA_TO_LOCATION
+        handler.sendMessage(message)
     }
 
     fun DataConvertInit(){
@@ -107,11 +128,6 @@ class LoadingActivity : AppCompatActivity() {
                 break
             }
         }
-
-        var message = handler.obtainMessage()
-        message.arg1 = DATA_TO_LOCATION
-        handler.sendMessage(message)
-
     }
 
     inner class DataConvert:Callable<ArrayList<MyLocation>>{
