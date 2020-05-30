@@ -11,6 +11,7 @@ import android.widget.EditText
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.example.myapplication.BuyPage.BuyListFragment
+import com.example.myapplication.Data.Product
 
 import com.example.myapplication.R
 import kotlinx.android.synthetic.main.fragment_code.*
@@ -26,6 +27,18 @@ class CodeFragment : Fragment() {
     lateinit var buyFrag:BuyListFragment
     lateinit var codeBtn:Button
     lateinit var enterCode:EditText
+    lateinit var product:HashMap<String,Product>
+
+    companion object{
+        fun newInstace(product:HashMap<String,Product>):Fragment{
+            var codeFrag = CodeFragment()
+            var args = Bundle()
+            args.putSerializable("PRODUCT",product)
+            codeFrag.arguments = args
+            return codeFrag
+        }
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,6 +55,13 @@ class CodeFragment : Fragment() {
     fun init(){
         codeBtn.setOnClickListener {
             codebtnClick()
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if(arguments != null){
+            this.product = arguments!!.getSerializable("PRODUCT") as HashMap<String,Product>
         }
     }
 
@@ -62,7 +82,7 @@ class CodeFragment : Fragment() {
         fm = activity!!.supportFragmentManager
         ft = fm.beginTransaction()
 
-        ft.replace(R.id.frameLayout,buyFrag)
+        ft.replace(R.id.frameLayout,BuyListFragment.newInstace(product))
         ft.commit()
     }
 

@@ -21,10 +21,7 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedList
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.example.myapplication.CodePage.CodeFragment
-import com.example.myapplication.Data.EventData
-import com.example.myapplication.Data.EventItem
-import com.example.myapplication.Data.MartData
-import com.example.myapplication.Data.MyLocation
+import com.example.myapplication.Data.*
 import com.example.myapplication.MainDialog.EventDialog.EventDialog
 import com.example.myapplication.MainDialog.SearchDialog.SearchDialog
 import com.example.myapplication.R
@@ -45,6 +42,8 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
     //for application
     var martDataLocation:ArrayList<MyLocation> = arrayListOf()
     var eventData:ArrayList<EventItem> = arrayListOf()
+    var product:HashMap<String, Product> = hashMapOf()
+
     //for map
     val UPDATE_INTERVAL_MS:Long = 100
     val FASTEST_UPDATE_INTERVAL_MS:Long = 50
@@ -100,6 +99,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         var intent = getIntent()
         martDataLocation = intent.getSerializableExtra("MART_DATA") as ArrayList<MyLocation>
         eventData = intent.getParcelableArrayListExtra("EVENT_DATA")
+        product = intent.getParcelableArrayExtra("PRODUCT_DATA") as HashMap<String,Product>
         Log.d("인텐트",martDataLocation.size.toString()+" "+eventData.size.toString())
     }
 
@@ -431,7 +431,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         when (n) {
             1 -> {
                 //연동코드 입력 프래그먼트
-                ft.replace(R.id.frameLayout, codeFrag)
+                ft.replace(R.id.frameLayout, CodeFragment.newInstace(product))
                 ft.commit()
             }
         }

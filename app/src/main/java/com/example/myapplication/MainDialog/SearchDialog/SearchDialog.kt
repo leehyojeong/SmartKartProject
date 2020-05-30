@@ -10,7 +10,8 @@ import android.view.Gravity
 import android.view.WindowManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.BuyPage.ItemListAdapter
-import com.example.myapplication.BuyPage.ListItem
+import com.example.myapplication.Data.Product
+import com.example.myapplication.Data.ProductData
 import com.example.myapplication.R
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -22,10 +23,8 @@ class SearchDialog(context: Context) : Dialog(context){
     var latitude = 0.0
     var longitude = 0.0
 
-
-
     lateinit var adapter:ItemListAdapter
-    lateinit var list:ArrayList<ListItem>//검색
+    lateinit var list:ArrayList<Product>//검색
 
     var database = FirebaseDatabase.getInstance() as FirebaseDatabase
     var myRef = database.reference
@@ -63,8 +62,6 @@ class SearchDialog(context: Context) : Dialog(context){
 //            initLayout()
         }
 
-
-
     }
 
     override fun cancel() {
@@ -100,7 +97,15 @@ class SearchDialog(context: Context) : Dialog(context){
                         if(key.contains(name)){
                             //문자열이 포함되면
                             var price = value[category]!![key]!!["price"].toString().replace(",","")
-                            list.add(ListItem(value[category]!![key]!!["img"].toString(),key,0,price.toInt(),""))
+                            list.add(
+                                Product(
+                                    value[category]!![key]!!["img"].toString(),
+                                    key,
+                                    0,
+                                    price.toInt(),
+                                    ""
+                                )
+                            )
                         }
                     }
                 }

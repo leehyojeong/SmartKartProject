@@ -15,17 +15,17 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedList
 import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
-import com.example.myapplication.Data.EventData
-import com.example.myapplication.Data.EventItem
-import com.example.myapplication.Data.MartData
-import com.example.myapplication.Data.MyLocation
+import com.example.myapplication.Data.*
 import com.example.myapplication.R
 import com.koushikdutta.ion.Ion
+import java.io.DataInputStream
+import java.net.Socket
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.FutureTask
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class LoadingActivity : AppCompatActivity() {
 
@@ -37,8 +37,10 @@ class LoadingActivity : AppCompatActivity() {
     //Data
     var martDataArray:PaginatedList<MartData> ?= null
     var eventDataArray:PaginatedList<EventData> ?= null
+    var itemDataArray:PaginatedList<ProductData> ?= null
     var martDataLocation:ArrayList<MyLocation> = arrayListOf()
     var eventData:ArrayList<EventItem> = arrayListOf()
+    var product:HashMap<String,Product> = hashMapOf()
 
 
     //Handler
@@ -63,9 +65,13 @@ class LoadingActivity : AppCompatActivity() {
         Log.d("아마존",ddb.toString())
         dynamoDBMapper = DynamoDBMapper.builder().dynamoDBClient(ddb).build()
 
+
+        //python 서버 연결
+//        connectPython()
+
         //AsyncTask를 통해 데이터를 가져옴
         val AWSAsyncTask = AWSAsyncTask()
-        AWSAsyncTask.execute()
+//        AWSAsyncTask.execute()
 
 //        //핸들러 생성
         handler = Handler(Handler.Callback {
@@ -75,6 +81,7 @@ class LoadingActivity : AppCompatActivity() {
                     //데이터를 다 불러옴
                     Log.d("스레드","GET_DATA")
                     DataConvertInit()
+                    DatatoProduct()
                     StringtoImage()
                 }
                 DATA_TO_LOCATION->{
@@ -84,11 +91,45 @@ class LoadingActivity : AppCompatActivity() {
                     val intent = Intent(this, MainActivity::class.java)
                     intent.putExtra("MART_DATA",martDataLocation)
                     intent.putExtra("EVENT_DATA",eventData)
-                    startActivity(intent)
+                    intent.putExtra("PRODUCT_DATA",product)
+                    Log.d("아마존","인텐트 변경")
+//                    startActivity(intent)
                 }
             }
             return@Callback true
         })
+    }
+
+    //python server
+    fun connectPython(){
+        Thread(object: Runnable {
+            override fun run() {
+                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                Log.d("서버","연결중")
+                var socket = Socket("192.168.0.6",35357)
+                Log.d("서버",socket.toString())
+
+                var dis = DataInputStream(socket.getInputStream())
+
+//                while(true){
+//                    var line = dis.read() as Int
+//                    Log.d("서버","서버에서 받은 값 "+line.toString())
+//
+//                    if(line == 99){
+//                        Log.d("서버","종료")
+//                        socket.close()
+//                        break
+//                    }
+//                }
+            }
+
+        }).start()
+    }
+
+    fun DatatoProduct(){
+        for(item in itemDataArray!!){
+            product[item.name] = Product(item.img,item.name,item.number,item.price,item.category)
+        }
     }
 
     fun StringtoImage(){
@@ -124,7 +165,6 @@ class LoadingActivity : AppCompatActivity() {
                 //모두 종료된 경우
                 martDataLocation.addAll(futureTask1.get())
                 martDataLocation.addAll(futureTask2.get())
-
                 break
             }
         }
@@ -159,7 +199,6 @@ class LoadingActivity : AppCompatActivity() {
                     arrayData.add(MyLocation(latitude,longitude,data[index].getMartName()))
                 }
             }
-
             return arrayData
         }
     }
@@ -169,6 +208,7 @@ class LoadingActivity : AppCompatActivity() {
            // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             martDataArray = dynamoDBMapper!!.scan(MartData::class.java, DynamoDBScanExpression())
             eventDataArray = dynamoDBMapper!!.scan(EventData::class.java,DynamoDBScanExpression())
+            itemDataArray = dynamoDBMapper!!.scan(ProductData::class.java,DynamoDBScanExpression())
             return 0
         }
 

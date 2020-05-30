@@ -1,21 +1,27 @@
 package com.example.myapplication.BuyPage
 
 
-import android.app.Dialog
-import android.graphics.Point
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.amazonaws.auth.CognitoCachingCredentialsProvider
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper
+import com.amazonaws.regions.Region
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.example.myapplication.BuyPage.OtherItemDialog.OtherItemDialog
+import com.example.myapplication.CodePage.CodeFragment
+import com.example.myapplication.Data.BuyList
+import com.example.myapplication.Data.Product
+import com.example.myapplication.Data.ProductData
 
 import com.example.myapplication.R
-import kotlinx.android.synthetic.main.fragment_buy_list.*
 import kotlinx.android.synthetic.main.fragment_buy_list.view.*
 
 /**
@@ -24,9 +30,34 @@ import kotlinx.android.synthetic.main.fragment_buy_list.view.*
 class BuyListFragment : Fragment() {
 
     lateinit var adapter:ItemListAdapter
-    lateinit var list:ArrayList<ListItem>//카트에 담긴 아이템 리스트
+    lateinit var list:ArrayList<Product>//카트에 담긴 아이템 리스트
+    var product:HashMap<String,Product> = hashMapOf()//전체 아이템 리스트
     lateinit var recycler:RecyclerView
     lateinit var total_price:TextView
+
+
+    //AWS
+    var dynamoDBMapper: DynamoDBMapper?= null
+    var ddb : AmazonDynamoDBClient?= null
+    lateinit var credentials: CognitoCachingCredentialsProvider
+
+
+    companion object{
+        fun newInstace(product:HashMap<String,Product>):Fragment{
+            var butFrag = BuyListFragment()
+            var args = Bundle()
+            args.putSerializable("PRODUCT",product)
+            butFrag.arguments = args
+            return butFrag
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if(arguments != null){
+            this.product = arguments!!.getSerializable("PRODUCT") as HashMap<String,Product>
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,16 +67,34 @@ class BuyListFragment : Fragment() {
         var v = inflater.inflate(R.layout.fragment_buy_list, container, false)
         recycler = v.total_list
         total_price = v.total_price
+        getAWS()//get AWS DynamoDB
         init()
         return v
     }
 
-    fun init(){
-        list = arrayListOf()
-        list.add(ListItem("abc.jpg","새우깡",1,800,"과자,초콜릿,시리얼,빵"))
-        list.add(ListItem("abcd.jpg","새우깡2",2,900,"과자,초콜릿,시리얼,빵"))
-        list.add(ListItem("fgh.jpg","노브랜드",1,1000,"과자,초콜릿,시리얼,빵"))
 
+    fun getAWS(){
+        credentials = CognitoCachingCredentialsProvider(context,"ap-northeast-2:1140fa47-3059-4bdb-a382-25735d00f34d", Regions.AP_NORTHEAST_2)
+        ddb = AmazonDynamoDBClient(credentials)
+        ddb!!.setRegion((Region.getRegion(Regions.AP_NORTHEAST_2)))
+        dynamoDBMapper = DynamoDBMapper.builder().dynamoDBClient(ddb).build()
+    }
+
+    fun loadData(){
+       Thread(object:Runnable{
+           override fun run() {
+               //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+               var item = dynamoDBMapper!!.load(BuyList::class.java,"202005300001")
+               for(i in 0..item.item.size){
+                   list.add(product.get(i as String)!!)
+               }
+           }
+       }).start()
+        adapter.notifyDataSetChanged()
+    }
+
+    fun init(){
+        loadData()
        initListLayout()
     }
 
@@ -61,7 +110,7 @@ class BuyListFragment : Fragment() {
             override fun OnItemClick(
                 holder: ItemListAdapter.ViewHolder,
                 view: View,
-                data: ListItem,
+                data: Product,
                 position: Int
             ) {
                // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -75,7 +124,7 @@ class BuyListFragment : Fragment() {
         //구매한 물건 총 금액
         var total = 0
         for(l in list){
-            total += (l.number*l.price)
+            total += (l.num*l.price)
         }
         total_price.text = total.toString()
     }

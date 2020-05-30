@@ -7,14 +7,16 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.myapplication.Data.Product
+import com.example.myapplication.Data.ProductData
 import com.example.myapplication.R
 
-class ItemListAdapter(var items:ArrayList<ListItem>,val context:Context, var hasCount:Boolean):RecyclerView.Adapter<ItemListAdapter.ViewHolder>() {
+class ItemListAdapter(var items:ArrayList<Product>, val context:Context, var hasCount:Boolean):RecyclerView.Adapter<ItemListAdapter.ViewHolder>() {
 
     var itemClickListener:OnItemClickListener ?= null
 
     interface OnItemClickListener{
-        fun OnItemClick(holder:ItemListAdapter.ViewHolder, view:View, data:ListItem, position:Int)
+        fun OnItemClick(holder:ItemListAdapter.ViewHolder, view:View, data: Product, position:Int)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -33,7 +35,7 @@ class ItemListAdapter(var items:ArrayList<ListItem>,val context:Context, var has
         //이미지 설정
         holder.name.text = items[position].name
         if(hasCount){
-            holder.count.text = items[position].number.toString()
+            holder.count.text = items[position].num.toString()
         }
         else{
             holder.count.text = ""
@@ -41,7 +43,7 @@ class ItemListAdapter(var items:ArrayList<ListItem>,val context:Context, var has
         holder.price.text = items[position].price.toString()+"원"
         var total = 0
         for (i in 0..position){
-            total += (items[i].price * items[i].number)
+            total += (items[i].price * items[i].num)
         }
         holder.totalPrice.text = total.toString()
     }

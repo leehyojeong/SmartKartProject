@@ -8,21 +8,20 @@ import android.view.Gravity
 import android.view.WindowManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.BuyPage.ItemListAdapter
-import com.example.myapplication.BuyPage.ListItem
+import com.example.myapplication.Data.Product
+import com.example.myapplication.Data.ProductData
 import com.example.myapplication.R
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.other_item_dialog.*
-import org.json.JSONArray
-import org.json.JSONObject
 
-class OtherItemDialog(context: Context,item:ListItem) : Dialog(context) {
+class OtherItemDialog(context: Context,item: Product) : Dialog(context) {
 
     lateinit var adapter:ItemListAdapter
-    lateinit var list:ArrayList<ListItem>//추천상품들
-    var item = item as ListItem
+    lateinit var list:ArrayList<Product>//추천상품들
+    var item = item as ProductData
 
     var database = FirebaseDatabase.getInstance() as FirebaseDatabase
     var myRef = database.getReference(item.category)
@@ -73,7 +72,15 @@ class OtherItemDialog(context: Context,item:ListItem) : Dialog(context) {
                     //문자열이 포함되면
                     Log.d("데이터",value[key]!!["gprice"].toString())
                     var price = value[key]!!["price"].toString().replace(",","")
-                    list.add(ListItem(value[key]!!["img"].toString(),key,0,price.toInt(),item.category))
+                    list.add(
+                        Product(
+                            value[key]!!["img"].toString(),
+                            key,
+                            0,
+                            price.toInt(),
+                            item.category
+                        )
+                    )
                 }
             }
             Log.d("확인","for끝")
