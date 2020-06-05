@@ -1,18 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    >
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:gravity="center" >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/event_item_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/item_content_back"
+
+        android:layout_marginLeft="@dimen/div_margin_10"
+        android:layout_marginRight="@dimen/div_margin_10"
+        android:layout_marginTop="@dimen/div_margin_5"
+        android:layout_marginBottom="@dimen/div_margin_5"
+        android:padding="@dimen/div_padding_15"
+        android:elevation="2dp">
 
     <ImageView
-        android:layout_width="0dp"
-        android:layout_height="150dp"
-        android:layout_weight="3"
-        android:id="@+id/event_image"/>
+        android:id="@+id/event_image"
+        android:layout_width="@dimen/item_width"
+        android:layout_height="@dimen/item_height"
+        android:background="@drawable/test_item"
 
-    <TextView
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/event_item_info_container"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="5"
-        android:id="@+id/event_name"/>
+        android:orientation="vertical"
+        android:layout_marginLeft="@dimen/div_margin_10"
+        android:layout_marginRight="@dimen/div_margin_10"
+
+        app:layout_constraintLeft_toRightOf="@+id/event_image"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+        <TextView
+            android:id="@+id/event_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="이벤트 상품 내용입니다."
+            android:textSize="@dimen/item_info_text"
+            android:textColor="#262626"
+            android:fontFamily="@font/apple_neo_sb"
+
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
