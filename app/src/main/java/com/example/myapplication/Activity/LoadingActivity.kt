@@ -8,10 +8,14 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.widget.Toast
 import com.amazonaws.auth.CognitoCachingCredentialsProvider
+import com.amazonaws.mobile.auth.userpools.CognitoUserPoolsSignInProvider
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBScanExpression
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedList
+import com.amazonaws.mobileconnectors.lambdainvoker.LambdaFunctionException
+import com.amazonaws.mobileconnectors.lambdainvoker.LambdaInvokerFactory
 import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
@@ -33,6 +37,7 @@ class LoadingActivity : AppCompatActivity() {
     var dynamoDBMapper: DynamoDBMapper?= null
     var ddb : AmazonDynamoDBClient?= null
     lateinit var credentials: CognitoCachingCredentialsProvider
+    lateinit var lambdacredentials:CognitoCachingCredentialsProvider
 
     //Data
     var martDataArray:PaginatedList<MartData> ?= null
@@ -42,6 +47,9 @@ class LoadingActivity : AppCompatActivity() {
     var eventData:ArrayList<EventItem> = arrayListOf()
     var product:HashMap<String,Product> = hashMapOf()
 
+    //연동 코드
+    lateinit var factory:LambdaInvokerFactory
+    lateinit var myInterface:MyInterface
 
     //Handler
     lateinit var handler:Handler
@@ -65,13 +73,22 @@ class LoadingActivity : AppCompatActivity() {
         Log.d("아마존",ddb.toString())
         dynamoDBMapper = DynamoDBMapper.builder().dynamoDBClient(ddb).build()
 
+        //AWS 람다 함수 연결
+        lambdacredentials = CognitoCachingCredentialsProvider(this,"ap-northeast-2:78a1b59b-091f-4e12-ba88-047ad107cdf8",Regions.AP_NORTHEAST_2)
+        factory = LambdaInvokerFactory(applicationContext,Regions.AP_NORTHEAST_2,lambdacredentials)
+        myInterface = factory.build(MyInterface::class.java)//잘 모르겠음
+        var request = RequestClass(true)
 
         //python 서버 연결
 //        connectPython()
 
         //AsyncTask를 통해 데이터를 가져옴
-        val AWSAsyncTask = AWSAsyncTask()
+//        val AWSAsyncTask = AWSAsyncTask()
 //        AWSAsyncTask.execute()
+
+        //AsyncTask를 이용한 카트 코드
+        val AWSAsyncTask2 = AWSAsyncTask2()
+        AWSAsyncTask2.execute(request)
 
 //        //핸들러 생성
         handler = Handler(Handler.Callback {
@@ -93,7 +110,7 @@ class LoadingActivity : AppCompatActivity() {
                     intent.putExtra("EVENT_DATA",eventData)
                     intent.putExtra("PRODUCT_DATA",product)
                     Log.d("아마존","인텐트 변경")
-//                    startActivity(intent)
+                    startActivity(intent)
                 }
             }
             return@Callback true
@@ -106,7 +123,7 @@ class LoadingActivity : AppCompatActivity() {
             override fun run() {
                 //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
                 Log.d("서버","연결중")
-                var socket = Socket("192.168.0.6",35357)
+                var socket = Socket("192.168.0.11",35357)
                 Log.d("서버",socket.toString())
 
                 var dis = DataInputStream(socket.getInputStream())
@@ -127,6 +144,7 @@ class LoadingActivity : AppCompatActivity() {
     }
 
     fun DatatoProduct(){
+
         for(item in itemDataArray!!){
             product[item.name] = Product(item.img,item.name,item.number,item.price,item.category)
         }
@@ -168,6 +186,7 @@ class LoadingActivity : AppCompatActivity() {
                 break
             }
         }
+
     }
 
     inner class DataConvert:Callable<ArrayList<MyLocation>>{
@@ -209,15 +228,35 @@ class LoadingActivity : AppCompatActivity() {
             martDataArray = dynamoDBMapper!!.scan(MartData::class.java, DynamoDBScanExpression())
             eventDataArray = dynamoDBMapper!!.scan(EventData::class.java,DynamoDBScanExpression())
             itemDataArray = dynamoDBMapper!!.scan(ProductData::class.java,DynamoDBScanExpression())
+
             return 0
         }
 
         override fun onPostExecute(result: Int?) {
             super.onPostExecute(result)
-            Log.d("스레드","onPOstExecute")
+            Log.d("스레드","onPostExecute")
             var message = handler.obtainMessage()
             message.arg1 = GET_DATA
             handler.sendMessage(message)
+        }
+    }
+
+    //코드 랜덤 발생 람다 async 함수
+    inner class AWSAsyncTask2 : AsyncTask<RequestClass, Void, ResponseClass>() {
+        override fun doInBackground(vararg params: RequestClass?): ResponseClass? {
+            try{
+                return myInterface.smartKartCode(params[0])
+            } catch(lfe: LambdaFunctionException){
+                Log.e("Tag","Failed to invoke echo",lfe)
+                return null
+            }
+        }
+
+        override fun onPostExecute(result: ResponseClass?) {
+            if(result==null){
+                return
+            }
+            Log.d("async",result.authenticationCode)
         }
     }
 }
