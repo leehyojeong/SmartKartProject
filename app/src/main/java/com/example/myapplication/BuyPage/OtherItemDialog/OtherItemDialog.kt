@@ -23,9 +23,6 @@ class OtherItemDialog(context: Context,item: Product) : Dialog(context) {
     lateinit var list:ArrayList<Product>//추천상품들
     var item = item as ProductData
 
-    var database = FirebaseDatabase.getInstance() as FirebaseDatabase
-    var myRef = database.getReference(item.category)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         var v = R.layout.other_item_dialog
@@ -57,36 +54,5 @@ class OtherItemDialog(context: Context,item: Product) : Dialog(context) {
     fun makeList(){
         //유사 상품 리스트
         list = arrayListOf()
-    myRef.addValueEventListener(object:ValueEventListener{
-        override fun onCancelled(p0: DatabaseError) {
-           // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun onDataChange(p0: DataSnapshot) {
-           // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            var value = p0.value as HashMap<String,HashMap<String,*>>
-
-            //문자열이 포함되는지
-            for (key in value.keys){
-                if(key.contains(item.name)){
-                    //문자열이 포함되면
-                    Log.d("데이터",value[key]!!["gprice"].toString())
-                    var price = value[key]!!["price"].toString().replace(",","")
-                    list.add(
-                        Product(
-                            value[key]!!["img"].toString(),
-                            key,
-                            0,
-                            price.toInt(),
-                            item.category
-                        )
-                    )
-                }
-            }
-            Log.d("확인","for끝")
-            initLayout()
-        }
-
-    })
     }
 }

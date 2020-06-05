@@ -2,6 +2,7 @@ package com.example.myapplication.BuyPage
 
 
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -30,8 +31,9 @@ import kotlinx.android.synthetic.main.fragment_buy_list.view.*
 class BuyListFragment : Fragment() {
 
     lateinit var adapter:ItemListAdapter
-    lateinit var list:ArrayList<Product>//카트에 담긴 아이템 리스트
+    var list:ArrayList<Product> = arrayListOf()//카트에 담긴 아이템 리스트
     var product:HashMap<String,Product> = hashMapOf()//전체 아이템 리스트
+    var product_key:ArrayList<String> = arrayListOf()
     lateinit var recycler:RecyclerView
     lateinit var total_price:TextView
 
@@ -40,6 +42,10 @@ class BuyListFragment : Fragment() {
     var dynamoDBMapper: DynamoDBMapper?= null
     var ddb : AmazonDynamoDBClient?= null
     lateinit var credentials: CognitoCachingCredentialsProvider
+
+    //handler
+    lateinit var handler:Handler
+    var READ_BUY_LIST = 7777
 
 
     companion object{
@@ -83,19 +89,38 @@ class BuyListFragment : Fragment() {
     fun loadData(){
        Thread(object:Runnable{
            override fun run() {
+               product_key = arrayListOf()
+               Log.d("코드 product",product.values.toString())
                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
                var item = dynamoDBMapper!!.load(BuyList::class.java,"202005300001")
-               for(i in 0..item.item.size){
-                   list.add(product.get(i as String)!!)
+               for(i in 0..item.item.size-1){
+                   product_key.add(item.item[i])
                }
+               var message = handler.obtainMessage()
+               message.arg1 = READ_BUY_LIST
+               handler.sendMessage(message)
            }
        }).start()
-        adapter.notifyDataSetChanged()
     }
 
     fun init(){
         loadData()
-       initListLayout()
+        handler = Handler(Handler.Callback {
+            when(it.arg1){
+                READ_BUY_LIST->{
+                    makeList()
+                    initListLayout()
+                }
+            }
+            return@Callback true
+        })
+    }
+
+    fun makeList(){
+        list = arrayListOf()
+        for(i in product_key){
+            list.add(product.get(i)!!)
+        }
     }
 
     fun initListLayout(){

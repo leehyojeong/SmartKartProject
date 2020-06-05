@@ -46,6 +46,7 @@ class ItemListAdapter(var items:ArrayList<Product>, val context:Context, var has
             total += (items[i].price * items[i].num)
         }
         holder.totalPrice.text = total.toString()
+        holder.img.setImageBitmap(items[position].img)
     }
 
     inner class ViewHolder(itemView: View):RecyclerView.ViewHolder(itemView){

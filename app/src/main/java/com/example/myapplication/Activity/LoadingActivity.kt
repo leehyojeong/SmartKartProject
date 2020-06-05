@@ -1,12 +1,15 @@
 package com.example.myapplication.Activity
 
+import android.app.Activity
 import android.content.Intent
+import android.content.SharedPreferences
 import android.location.Address
 import android.location.Geocoder
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.preference.PreferenceManager
 import android.util.Log
 import android.widget.Toast
 import com.amazonaws.auth.CognitoCachingCredentialsProvider
@@ -21,7 +24,10 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.example.myapplication.Data.*
 import com.example.myapplication.R
+import com.google.gson.Gson
 import com.koushikdutta.ion.Ion
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.DataInputStream
 import java.net.Socket
 import java.util.*
@@ -45,7 +51,7 @@ class LoadingActivity : AppCompatActivity() {
     var itemDataArray:PaginatedList<ProductData> ?= null
     var martDataLocation:ArrayList<MyLocation> = arrayListOf()
     var eventData:ArrayList<EventItem> = arrayListOf()
-    var product:HashMap<String,Product> = hashMapOf()
+    var product:ArrayList<Product> = arrayListOf()
 
     //연동 코드
     lateinit var factory:LambdaInvokerFactory
@@ -62,7 +68,51 @@ class LoadingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_loading)
         //아마존 스레드
-        init()
+        if(checkDataExists()){
+            Log.d("내장디비","데이터 있음")
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+//            finish()
+        }else{
+            init()
+//            finish()
+        }
+    }
+
+    //check data exists in sharedPreferences
+    fun checkDataExists():Boolean{
+        var sh = getSharedPreferences("AMAZON_DATA", Activity.MODE_PRIVATE)
+        if(sh.contains("AMAZON_MART")){
+            Log.d("내장디비",sh.getString("AMAZON_MART",null))
+            if(!sh.getString("AMAZON_MART",null)!!.isNotEmpty()){
+                Log.d("내장디비","마트데이터가 없음")
+                return false
+            }
+        }else{
+            Log.d("내장디비","마트데이터 키 없음")
+            return false
+        }
+        if(sh.contains("AMAZON_EVENT")){
+            Log.d("내장디비",sh.getString("AMAZON_EVENT",null))
+            if(!sh.getString("AMAZON_EVENT",null)!!.isNotEmpty()){
+                Log.d("내장디비","이벤트데이터가 없음")
+                return false
+            }
+        }else{
+            Log.d("내장디비","이벤트데이터 키 없음")
+            return false
+        }
+        if(sh.contains("AMAZON_PRODUCT")){
+            Log.d("내장디비",sh.getString("AMAZON_PRODUCT",null))
+            if(!sh.getString("AMAZON_PRODUCT",null)!!.isNotEmpty()){
+                Log.d("내장디비","상품데이터가 없음")
+                return false
+            }
+        }else{
+            Log.d("내장디비","상품데이터 키 없음")
+            return false
+        }
+        return true
     }
 
     fun init(){
@@ -83,8 +133,8 @@ class LoadingActivity : AppCompatActivity() {
 //        connectPython()
 
         //AsyncTask를 통해 데이터를 가져옴
-//        val AWSAsyncTask = AWSAsyncTask()
-//        AWSAsyncTask.execute()
+        val AWSAsyncTask = AWSAsyncTask()
+        AWSAsyncTask.execute()
 
         //AsyncTask를 이용한 카트 코드
         val AWSAsyncTask2 = AWSAsyncTask2()
@@ -104,17 +154,60 @@ class LoadingActivity : AppCompatActivity() {
                 DATA_TO_LOCATION->{
                     //데이터를 경도 위도 좌표로 변환
                     Log.d("스레드",martDataLocation.size.toString())
-                    //모든 데이터를 받아왔으므로 액티비티 전환
+
+                    //데이터를 내장 디비에 저장 (sharedpreference)
+                    if(martDataLocation.size>0){
+                        setDataArrayPref("AMAZON_MART",martDataLocation)
+                    }
+                    if(eventData.size>0){
+                        setDataArrayPref("AMAZON_EVENT",eventData)
+                    }
+                    if(product.size>0)
+                    {
+                        setDataMapRef("AMAZON_PRODUCT",product)
+                    }
+
+                    //모든 데이터를 받아왔으므로 액티비티 전환(intent)
                     val intent = Intent(this, MainActivity::class.java)
-                    intent.putExtra("MART_DATA",martDataLocation)
-                    intent.putExtra("EVENT_DATA",eventData)
-                    intent.putExtra("PRODUCT_DATA",product)
-                    Log.d("아마존","인텐트 변경")
+//                    intent.putExtra("MART_DATA",martDataLocation)
+//                    intent.putExtra("EVENT_DATA",eventData)
+//                    intent.putExtra("PRODUCT_DATA",product)
+//                    Log.d("아마존","인텐트 변경")
                     startActivity(intent)
                 }
             }
             return@Callback true
         })
+    }
+
+    //save sharedPreference ArrayList
+    fun <T>setDataArrayPref(key:String, values:ArrayList<T>){
+        var sh = getSharedPreferences("AMAZON_DATA", Activity.MODE_PRIVATE)
+        var editor = sh.edit()
+        var gson = Gson()
+        var json = gson.toJson(values)
+        if(!values.isEmpty()){
+            editor.remove(key)
+            editor.putString(key,json)
+        }else{
+            editor.putString(key,null)
+        }
+        editor.commit()
+    }
+
+    //save sharedPreference HashMap
+    fun setDataMapRef(key:String,values:ArrayList<Product>){
+        var sh = getSharedPreferences("AMAZON_DATA", Activity.MODE_PRIVATE)
+        var editor = sh.edit()
+        var gson = Gson()
+        var json = gson.toJson(values)
+        if(!values.isEmpty()){
+            editor.remove(key)
+            editor.putString(key,json)
+        }else{
+            editor.putString(key,null)
+        }
+        editor.commit()
     }
 
     //python server
@@ -144,9 +237,9 @@ class LoadingActivity : AppCompatActivity() {
     }
 
     fun DatatoProduct(){
-
         for(item in itemDataArray!!){
-            product[item.name] = Product(item.img,item.name,item.number,item.price,item.category)
+            var bit = Ion.with(this).load("http:"+item.getProductImg()).asBitmap().get()
+            product.add( Product(bit,item.name,item.number,item.price.replace(",","").toInt(),item.category,item.gprice))
         }
     }
 
@@ -186,7 +279,6 @@ class LoadingActivity : AppCompatActivity() {
                 break
             }
         }
-
     }
 
     inner class DataConvert:Callable<ArrayList<MyLocation>>{
@@ -228,7 +320,7 @@ class LoadingActivity : AppCompatActivity() {
             martDataArray = dynamoDBMapper!!.scan(MartData::class.java, DynamoDBScanExpression())
             eventDataArray = dynamoDBMapper!!.scan(EventData::class.java,DynamoDBScanExpression())
             itemDataArray = dynamoDBMapper!!.scan(ProductData::class.java,DynamoDBScanExpression())
-
+            Log.d("아마존 데이터",martDataArray!!.size.toString()+"   "+eventDataArray!!.size.toString()+"   "+itemDataArray!!.size.toString())
             return 0
         }
 

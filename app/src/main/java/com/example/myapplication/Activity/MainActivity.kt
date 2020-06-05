@@ -1,5 +1,6 @@
 package com.example.myapplication.Activity
 
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -34,6 +35,10 @@ import kotlinx.android.synthetic.main.activity_main2.*
 import kotlin.collections.ArrayList
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.maps.model.*
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import org.json.JSONArray
+import org.json.JSONObject
 
 
 class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,LocationListener{
@@ -80,7 +85,10 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         setContentView(R.layout.activity_main2)
 
 
-        getIntentData()
+//        getIntentData()
+        martDataLocation = getMartToJson("AMAZON_MART")
+        eventData = getEventToJson("AMAZON_EVENT")
+        product = getProductToJson("AMAZON_PRODUCT")
 
         locationRequest.interval = UPDATE_INTERVAL_MS
         locationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_MS
@@ -94,15 +102,42 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         setNavigation()
     }
 
-    //get Data
-    fun getIntentData(){
-        var intent = getIntent()
-        martDataLocation = intent.getSerializableExtra("MART_DATA") as ArrayList<MyLocation>
-        eventData = intent.getParcelableArrayListExtra("EVENT_DATA")
-        product = intent.getParcelableArrayExtra("PRODUCT_DATA") as HashMap<String,Product>
-        Log.d("인텐트",martDataLocation.size.toString()+" "+eventData.size.toString())
+    //data get from sharedPreference
+    fun getMartToJson(key:String):ArrayList<MyLocation>{
+        var prefs = getSharedPreferences("AMAZON_DATA", Activity.MODE_PRIVATE)
+        var json = prefs.getString(key,null)
+        var array = arrayListOf<MyLocation>()
+
+        var gson = Gson()
+        var type = object:TypeToken<ArrayList<MyLocation>>(){}.type
+        array = gson.fromJson(json,type)
+        return array
     }
 
+    fun getEventToJson(key:String):ArrayList<EventItem>{
+        var prefs = getSharedPreferences("AMAZON_DATA", Activity.MODE_PRIVATE)
+        var json = prefs.getString(key,null)
+        var array = arrayListOf<EventItem>()
+        var gson = Gson()
+        var type = object:TypeToken<ArrayList<EventItem>>(){}.type
+        array = gson.fromJson(json,type)
+        return array
+    }
+
+    fun getProductToJson(key:String):HashMap<String,Product>{
+        var prefs = getSharedPreferences("AMAZON_DATA", Activity.MODE_PRIVATE)
+        var json = prefs.getString(key,null)
+        var array = arrayListOf<Product>()
+        var gson = Gson()
+        var type = object:TypeToken<ArrayList<Product>>(){}.type
+        array = gson.fromJson(json,type)
+
+        var output = hashMapOf<String,Product>()
+        for(i in array){
+            output.put(i.name,i)
+        }
+        return output
+    }
 
     //MAP
     override fun onLocationChanged(p0: Location?) {
@@ -395,7 +430,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
             }
             2->{
                 //검색 다이얼로그
-                searchDialog = SearchDialog(this)
+                searchDialog = SearchDialog(this,product)
                 searchDialog!!.show()
                 searchDialog!!.setOnCancelListener {
                     var f2 = supportFragmentManager.beginTransaction()

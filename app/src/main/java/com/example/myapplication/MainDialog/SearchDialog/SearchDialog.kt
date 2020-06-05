@@ -19,16 +19,14 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.search_dialog.*
 
-class SearchDialog(context: Context) : Dialog(context){
+class SearchDialog(context: Context,product_map:HashMap<String,Product>) : Dialog(context){
     var latitude = 0.0
     var longitude = 0.0
 
+    //data
     lateinit var adapter:ItemListAdapter
-    lateinit var list:ArrayList<Product>//검색
-
-    var database = FirebaseDatabase.getInstance() as FirebaseDatabase
-    var myRef = database.reference
-
+    var list:ArrayList<Product> = arrayListOf()//검색 list
+    var product:HashMap<String,Product> = product_map//product list
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +34,6 @@ class SearchDialog(context: Context) : Dialog(context){
 
         getWindow()?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT));
         setContentView(v)
-
 
 
         //다이얼로드 밖의 화면 흐리게
@@ -49,6 +46,7 @@ class SearchDialog(context: Context) : Dialog(context){
         layoutParams.gravity = Gravity.BOTTOM
 
         window!!.attributes = layoutParams
+
 
 
         //검색버튼 눌렀을 때
@@ -67,9 +65,7 @@ class SearchDialog(context: Context) : Dialog(context){
     override fun cancel() {
         super.cancel()
         Log.d("종료","종료")
-
     }
-
 
     fun initLayout(){
         adapter = ItemListAdapter(list, context,false)
@@ -79,40 +75,14 @@ class SearchDialog(context: Context) : Dialog(context){
     }
 
     fun makeList(name:String){
+        Log.d("검색 함수","클릭")
         //유사 상품 리스트
-        list = arrayListOf()
-        Log.d("검색",myRef.toString())
-        myRef.addValueEventListener(object: ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-                // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        for(item in product.keys){
+            Log.d("검색",item)
+            if(item.contains(name)){
+                list.add(Product(product[item]!!.img,product[item]!!.name,product[item]!!.num,product[item]!!.price,product[item]!!.category_id,product[item]!!.gprice))
             }
-
-            override fun onDataChange(p0: DataSnapshot) {
-                // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                var value = p0.value as HashMap<String,HashMap<String,HashMap<String,*>>>
-                Log.d("검색",value.keys.toString())
-                //문자열이 포함되는지
-                for (category in value.keys){
-                    for(key in value[category]!!.keys){
-                        if(key.contains(name)){
-                            //문자열이 포함되면
-                            var price = value[category]!![key]!!["price"].toString().replace(",","")
-                            list.add(
-                                Product(
-                                    value[category]!![key]!!["img"].toString(),
-                                    key,
-                                    0,
-                                    price.toInt(),
-                                    ""
-                                )
-                            )
-                        }
-                    }
-                }
-                Log.d("검색","for끝")
-                initLayout()
-            }
-
-        })
+        }
+        initLayout()
     }
 }

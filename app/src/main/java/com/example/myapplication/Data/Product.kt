@@ -1,24 +1,27 @@
 package com.example.myapplication.Data
 
+import android.graphics.Bitmap
 import android.os.Parcel
 import android.os.Parcelable
 
-data class Product(var img:String,var name:String, var num:Int, var price:Int, var category:String ):Parcelable {
+data class Product(var img:Bitmap,var name:String, var num:Int, var price:Int, var category_id:String, var gprice:String):Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readString()!!,
+        parcel.readParcelable(Bitmap::class.java.classLoader)!!,
         parcel.readString()!!,
         parcel.readInt(),
         parcel.readInt(),
+        parcel.readString()!!,
         parcel.readString()!!
     ) {
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(img)
+        parcel.writeParcelable(img, flags)
         parcel.writeString(name)
         parcel.writeInt(num)
         parcel.writeInt(price)
-        parcel.writeString(category)
+        parcel.writeString(category_id)
+        parcel.writeString(gprice)
     }
 
     override fun describeContents(): Int {
@@ -34,4 +37,6 @@ data class Product(var img:String,var name:String, var num:Int, var price:Int, v
             return arrayOfNulls(size)
         }
     }
+
+
 }
