@@ -69,7 +69,7 @@ class CodeFragment : Fragment() {
         //확인 버튼을 클릭했을 때
         var code = enterCode.text.toString()//입력한 코드 번호
         //각 지역의 매장마다의 코드 번호와 비교해야함
-        var tmpCode = "576"//임의의 매장 카트 코드번호
+        var tmpCode = "123"//임의의 매장 카트 코드번호
         if(code == tmpCode){
             //코드 번호가 같은 것이 있는 경우 사용 가능
             buyFrag = BuyListFragment()
@@ -86,4 +86,8 @@ class CodeFragment : Fragment() {
         ft.commit()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+    }
 }

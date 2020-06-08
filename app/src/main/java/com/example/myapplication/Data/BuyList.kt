@@ -7,13 +7,13 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBTable
 import java.io.Serializable
 
 //get Data from DynamoDB User Buy List
-@DynamoDBTable(tableName = "butList")
+@DynamoDBTable(tableName = "Item")
 class BuyList:Serializable {
     lateinit var num:String//kart number
      var item:ArrayList<String> = arrayListOf()//item list
 
-    @DynamoDBHashKey(attributeName = "num")
-    @DynamoDBAttribute(attributeName = "num")
+    @DynamoDBHashKey(attributeName = "code")
+    @DynamoDBAttribute(attributeName = "code")
     fun getEventName():String{
         return num
     }

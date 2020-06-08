@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.os.Parcel
 import android.os.Parcelable
 
-data class Product(var img:Bitmap,var name:String, var num:Int, var price:Int, var category_id:String, var gprice:String):Parcelable {
+data class Product(var img:Bitmap,var name:String, var num:Int=0, var price:Int, var category_id:String, var gprice:String):Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readParcelable(Bitmap::class.java.classLoader)!!,
         parcel.readString()!!,

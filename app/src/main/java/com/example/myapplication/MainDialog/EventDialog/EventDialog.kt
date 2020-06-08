@@ -3,6 +3,7 @@ package com.example.myapplication.MainDialog.EventDialog
 import android.app.Dialog
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -19,6 +20,7 @@ import com.example.myapplication.Data.EventItem
 import com.example.myapplication.R
 import com.koushikdutta.ion.Ion
 import kotlinx.android.synthetic.main.event_dialog.*
+import java.io.ByteArrayOutputStream
 
 class EventDialog(context: Context, argeventList:ArrayList<EventItem>) : Dialog(context) {
 
@@ -27,6 +29,7 @@ class EventDialog(context: Context, argeventList:ArrayList<EventItem>) : Dialog(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         var v = R.layout.event_dialog
         getWindow()?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT));
         setContentView(v)
@@ -46,26 +49,39 @@ class EventDialog(context: Context, argeventList:ArrayList<EventItem>) : Dialog(
     }
 
     fun setInit(){
-        for(image in 0..3){
-            changeImage(eventList[image].img,eventList[image].name)
-        }
+        Log.d("이벤트","setInit")
+        changeImage(eventList[0].img,eventList[0].name)
+//        for(image in 0..3){
+//
+//        }
         var adapter = EventListAdapter(context,eventList)
         val layoutManager = LinearLayoutManager(context!!, LinearLayoutManager.VERTICAL,false)
         event_list_view.layoutManager = layoutManager
         event_list_view.adapter = adapter
     }
 
+
     fun changeImage(image:Bitmap,title:String){
         var context = context!!.applicationContext
         val eventLayout = LinearLayout(context)
         eventLayout.orientation = LinearLayout.VERTICAL
-
-
         val textView = TextView(context)
         val imageView = ImageView(context)
-        Log.d("이벤트","http:"+image)
+        Log.d("이벤트",image.toString())
+
+//        var baos = ByteArrayOutputStream()
+//        image.compress(Bitmap.CompressFormat.PNG,100,baos)
+////        Log.d("이벤트",)
+//        var b = baos.toByteArray()
+//        Log.d("이벤트",b.toString())
+//        var imageAsBytes = BitmapFactory.decodeByteArray(b,0,b.size)
 
         imageView.setImageBitmap(image)
+        Log.d("이벤트 setImageBitmap","setImage")
+//        var options = BitmapFactory.Options().apply {
+//            inJustDecodeBounds = true
+//        }
+
 
         textView.text = title
 
@@ -79,6 +95,7 @@ class EventDialog(context: Context, argeventList:ArrayList<EventItem>) : Dialog(
 
         event_slide.setInAnimation(context, android.R.anim.slide_in_left)
         event_slide.setOutAnimation(context,android.R.anim.slide_out_right)
+        Log.d("이벤트","사진 다 달았음")
     }
 
 }
