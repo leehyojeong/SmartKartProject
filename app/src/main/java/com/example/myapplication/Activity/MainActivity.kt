@@ -93,9 +93,12 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main2)
 
+        checkPermissions()
+
          getFileMart()
         getFileEvent()
         getFileProduct()
+
 
         locationRequest.interval = UPDATE_INTERVAL_MS
         locationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_MS
@@ -282,6 +285,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
             if(ActivityCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                     ActivityCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
                 //퍼미션이 없음
+                Log.d("퍼미션","없음")
                 return
             }
 
@@ -371,14 +375,14 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
 
         if(hasFineLocationPermission == PackageManager.PERMISSION_DENIED && fineLocationRationale){
             showDialogForPermission("앱을 사용하려면 GPS사용을 활성화해야 합니다")
-            Log.d("권한","앱을 사용하려면 GPS사용활성화")
+            Log.d("퍼미션","앱을 사용하려면 GPS사용활성화")
         }else if(hasFineLocationPermission == PackageManager.PERMISSION_DENIED && !fineLocationRationale){
             showDialogForPermission("설정에서 GPS사용을 활성화해주세요")
-            Log.d("권한","설정에서 GPS활성화 해주세요")
+            Log.d("퍼미션","설정에서 GPS활성화 해주세요")
         }else if(hasFineLocationPermission == PackageManager.PERMISSION_GRANTED){
             if(mGoogleApiClient.isConnected == false){
                 mGoogleApiClient.connect()
-                Log.d("권한","권한 허용")
+                Log.d("퍼미션","권한 허용")
             }
         }
     }

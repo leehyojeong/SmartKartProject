@@ -73,6 +73,8 @@ class LoadingActivity : AppCompatActivity() {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
+        }else{
+
         }
     }
 
@@ -88,20 +90,22 @@ class LoadingActivity : AppCompatActivity() {
             if(!mart_file.exists() && !event_file.exists() && !product_file.exists()){
                 Log.d("파일","다 없음")
                 init("ALL")
+            }else{
+               if(!mart_file.exists()){
+                    //no mart json
+                    Log.d("파일","마트 없음")
+                    init("MART")
+                }
+                if(!event_file.exists()){
+                    Log.d("파일","이벤트 없음")
+                    init("EVENT")
+                }
+                if(!product_file.exists()){
+                    Log.d("파일","상품 없음")
+                    init("PRODUCT")
+                }
             }
-            if(!mart_file.exists()){
-                //no mart json
-                Log.d("파일","마트 없음")
-                init("MART")
-            }
-            if(!event_file.exists()){
-                Log.d("파일","이벤트 없음")
-                init("EVENT")
-            }
-            if(!product_file.exists()){
-                Log.d("파일","상품 없음")
-                init("PRODUCT")
-            }
+
             return false
         }
     }
