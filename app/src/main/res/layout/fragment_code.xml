@@ -13,6 +13,25 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <TextView
+            android:id="@+id/lambdaKartCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:text="00000"
+            android:textSize="@dimen/code_num"
+            android:inputType="number"
+            android:textColorHint="#a6a6a6"
+            android:textColor="#404040"
+            android:fontFamily="@font/apple_neo_b"
+            android:padding="@dimen/input_padding"
+
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/codeNum"
+
+            android:layout_marginBottom="@dimen/div_margin_20"/>
+
         <EditText
             android:id="@+id/codeNum"
             android:layout_width="@dimen/code_input_width"

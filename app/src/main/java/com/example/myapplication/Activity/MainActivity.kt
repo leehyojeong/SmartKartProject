@@ -1,12 +1,10 @@
 package com.example.myapplication.Activity
 
-import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.location.*
@@ -14,22 +12,17 @@ import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
-import android.util.AttributeSet
 import android.util.Base64
 import android.util.Log
-import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.amazonaws.auth.CognitoCachingCredentialsProvider
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedList
 import com.amazonaws.mobileconnectors.lambdainvoker.LambdaFunctionException
 import com.amazonaws.mobileconnectors.lambdainvoker.LambdaInvokerFactory
 import com.amazonaws.regions.Regions
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.example.myapplication.CodePage.CodeFragment
 import com.example.myapplication.Data.*
 import com.example.myapplication.MainDialog.EventDialog.EventDialog
@@ -44,13 +37,9 @@ import kotlinx.android.synthetic.main.activity_main2.*
 import kotlin.collections.ArrayList
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.maps.model.*
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import kotlinx.android.synthetic.main.fragment_code.*
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
-import java.io.ByteArrayOutputStream
 import java.io.InputStreamReader
 
 
@@ -95,6 +84,8 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
     lateinit var lambdacredentials:CognitoCachingCredentialsProvider
     lateinit var factory: LambdaInvokerFactory
     lateinit var myInterface:MyInterface
+    lateinit var KartCode:String
+    lateinit var codeBundle: Bundle
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -549,8 +540,16 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
 
         when (n) {
             1 -> {
-                //연동코드 입력 프래그먼트
+                //번들 객체 생성 - 인증코드 text 값으로 저장 - String 전달
+                // var bundle : Bundle = Bundle()
+                //bundle.putString("KartCode",KartCode)
+
+                //var codeFragment = CodeFragment.newInstace(product)
+                //codeFragment.arguments=bundle
+
+                // 연동코드 입력 프래그먼트
                 ft.replace(R.id.frameLayout, CodeFragment.newInstace(product))
+                // ft.replace(R.id.frameLayout,codeFragment)
                 ft.commit()
             }
         }
@@ -572,6 +571,8 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
             if(result==null){
                 return
             }
+            // KartCode = result.authenticationCode.toString()
+            // codeBundle
             Log.d("async",result.authenticationCode)
         }
     }

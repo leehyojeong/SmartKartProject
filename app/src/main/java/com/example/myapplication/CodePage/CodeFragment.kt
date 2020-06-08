@@ -14,7 +14,6 @@ import com.example.myapplication.BuyPage.BuyListFragment
 import com.example.myapplication.Data.Product
 
 import com.example.myapplication.R
-import kotlinx.android.synthetic.main.fragment_code.*
 import kotlinx.android.synthetic.main.fragment_code.view.*
 
 /**
