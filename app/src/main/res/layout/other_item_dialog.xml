@@ -1,48 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
-    <LinearLayout
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/select_item_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/select_list"
+
+        android:layout_marginLeft="@dimen/div_margin_10"
+        android:layout_marginRight="@dimen/div_margin_10"
+        android:layout_marginTop="@dimen/div_margin_5"
+        android:layout_marginBottom="@dimen/div_margin_5"
+        android:padding="@dimen/div_padding_15">
+
         <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:id="@+id/select_item_img"/>
+            android:id="@+id/select_item_img"
+            android:layout_width="@dimen/item_width"
+            android:layout_height="@dimen/item_height"
+            android:background="@drawable/test_item"
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-            <LinearLayout
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/select_item_info_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginLeft="@dimen/div_margin_10"
+            android:layout_marginRight="@dimen/div_margin_10"
+
+            app:layout_constraintLeft_toRightOf="@+id/select_item_img"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/select_item_info_sub_container"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content"
+
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
                 <TextView
-                    android:layout_width="250dp"
-                    android:layout_height="match_parent"
+                    android:id="@+id/select_item_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="새우깡"
-                    android:gravity="left"
-                    android:layout_gravity="left"
-                    android:id="@+id/select_item_name"/>
+                    android:textSize="@dimen/item_info_text"
+                    android:textColor="#595959"
+                    android:fontFamily="@font/apple_neo_r"
 
-            </LinearLayout>
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>>
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="25dp"
+                android:id="@+id/select_item_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="W960"
-                android:id="@+id/select_item_price">
+                android:textSize="@dimen/item_info_text"
+                android:textColor="#262626"
+                android:fontFamily="@font/apple_neo_sb"
 
-            </TextView>
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/select_item_info_sub_container"/>
 
-        </LinearLayout>
-    </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    <View
+        android:id="@+id/yellow_line"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/line_height"
+        android:background="#ffc000"
+
+        android:layout_marginTop="@dimen/div_margin_5"
+        android:layout_marginLeft="@dimen/div_margin_15"
+        android:layout_marginRight="@dimen/div_margin_15"
+
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/select_item_container"/>
+    <TextView
+        android:id="@+id/recommand_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="추천 상품"
+        android:textSize="@dimen/title_text"
+        android:textColor="#404040"
+        android:fontFamily="@font/apple_neo_sb"
+
+        android:layout_marginTop="@dimen/div_margin_15"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/yellow_line"
+        app:layout_constraintBottom_toTopOf="@+id/select_list"/>
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/select_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/select_list"/>
+        android:layout_height="wrap_content"
+        tools:listitem="@layout/item_list"
 
-</LinearLayout>
+        android:layout_marginTop="@dimen/div_margin_15"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/recommand_text"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
