@@ -86,6 +86,7 @@ class CodeFragment : Fragment() {
         }
     }
 
+
     fun setFragment(){
         //프래그먼트 페이지 설정
         fm = activity!!.supportFragmentManager
