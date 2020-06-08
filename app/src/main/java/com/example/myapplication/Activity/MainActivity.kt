@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main2)
 
-        checkPermissions()
+
 
          getFileMart()
         getFileEvent()
@@ -109,6 +109,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
             .addApi(LocationServices.API)
             .build()
 
+        checkPermissions()
         setNavigation()
     }
 
@@ -370,6 +371,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
 
     //Permission
     fun checkPermissions(){
+
         var fineLocationRationale = ActivityCompat.shouldShowRequestPermissionRationale(this,android.Manifest.permission.ACCESS_FINE_LOCATION)
         var hasFineLocationPermission = ContextCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_FINE_LOCATION)
 

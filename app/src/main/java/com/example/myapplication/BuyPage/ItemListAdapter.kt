@@ -1,17 +1,20 @@
 package com.example.myapplication.BuyPage
 
 import android.content.Context
+import android.opengl.Visibility
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.Data.Product
 import com.example.myapplication.Data.ProductData
 import com.example.myapplication.R
 
-class ItemListAdapter(var items:ArrayList<Product>, val context:Context, var hasCount:Boolean):RecyclerView.Adapter<ItemListAdapter.ViewHolder>() {
+class ItemListAdapter(var items:ArrayList<Product>, val context:Context, var hasCount:Boolean,var isCheck:Boolean):RecyclerView.Adapter<ItemListAdapter.ViewHolder>() {
 
     var itemClickListener:OnItemClickListener ?= null
 
@@ -42,11 +45,20 @@ class ItemListAdapter(var items:ArrayList<Product>, val context:Context, var has
         }
         holder.price.text = items[position].price.toString()+"원"
         var total = 0
-        for (i in 0..position){
-            total += (items[i].price * items[i].num)
+        if(hasCount){
+            for (i in 0..position){
+                total += (items[i].price * items[i].num)
+            }
         }
+
         holder.totalPrice.text = total.toString()
         holder.img.setImageBitmap(items[position].img)
+
+        if(isCheck){
+         holder.check.visibility =  View.VISIBLE
+        }else{
+            holder.check.visibility = View.INVISIBLE
+        }
     }
 
     inner class ViewHolder(itemView: View):RecyclerView.ViewHolder(itemView){
@@ -55,12 +67,14 @@ class ItemListAdapter(var items:ArrayList<Product>, val context:Context, var has
         var price:TextView
         var count:TextView
         var totalPrice:TextView
+        var check:CheckBox
         init{
             img = itemView.findViewById(R.id.item_img)
             name = itemView.findViewById(R.id.item_name)
             price = itemView.findViewById(R.id.item_price)
             count = itemView.findViewById(R.id.item_count)
             totalPrice = itemView.findViewById(R.id.total_price_list)
+            check = itemView.findViewById(R.id.seperate_item)
             itemView.setOnClickListener {
                 val position = adapterPosition
                 itemClickListener?.OnItemClick(this,it,items[position],position)

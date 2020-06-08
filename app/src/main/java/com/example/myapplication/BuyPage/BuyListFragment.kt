@@ -8,11 +8,13 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.amazonaws.auth.CognitoCachingCredentialsProvider
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBScanExpression
 import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
@@ -23,6 +25,7 @@ import com.example.myapplication.Data.Product
 import com.example.myapplication.Data.ProductData
 
 import com.example.myapplication.R
+import kotlinx.android.synthetic.main.fragment_buy_list.*
 import kotlinx.android.synthetic.main.fragment_buy_list.view.*
 
 /**
@@ -36,6 +39,7 @@ class BuyListFragment : Fragment() {
     var product_key:ArrayList<String> = arrayListOf()
     lateinit var recycler:RecyclerView
     lateinit var total_price:TextView
+    lateinit var seperateBox:CheckBox
 
 
     //AWS
@@ -74,8 +78,10 @@ class BuyListFragment : Fragment() {
         var v = inflater.inflate(R.layout.fragment_buy_list, container, false)
         recycler = v.total_list
         total_price = v.total_price
+        seperateBox = v.seperateBox
         getAWS()//get AWS DynamoDB
         init()
+        checkSeperate()
         return v
     }
 
@@ -93,8 +99,11 @@ class BuyListFragment : Fragment() {
                product_key = arrayListOf()
                Log.d("코드 product",product.values.toString())
                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+               var scanItem = dynamoDBMapper!!.scan(BuyList::class.java, DynamoDBScanExpression())
                var item = dynamoDBMapper!!.load(BuyList::class.java,"2222")
-               for(i in 0..item.item.size-1){
+               Log.d("코드 product",item.toString())
+               for(i in 0 until item.item.size){
+                   Log.d("코드 물건 하나",item.item[i])
                    product_key.add(item.item[i])
                }
                var message = handler.obtainMessage()
@@ -110,7 +119,7 @@ class BuyListFragment : Fragment() {
             when(it.arg1){
                 READ_BUY_LIST->{
                     makeList()
-                    initListLayout()
+                    initListLayout(false)
                 }
             }
             return@Callback true
@@ -119,13 +128,16 @@ class BuyListFragment : Fragment() {
 
     fun makeList(){
         list = arrayListOf()
+        var count = 0
         for(i in product_key){
             list.add(product.get(i)!!)
+            list[count].num = 1
+            count++
         }
     }
 
-    fun initListLayout(){
-        adapter = ItemListAdapter(list,context!!,true)//갯수 표시를 해줌
+    fun initListLayout(isCheck:Boolean){
+        adapter = ItemListAdapter(list,context!!,true,isCheck)//갯수 표시를 해줌
         val layoutManager = LinearLayoutManager(context!!,LinearLayoutManager.VERTICAL,false)
         recycler.layoutManager = layoutManager
         recycler.adapter = adapter
@@ -157,4 +169,15 @@ class BuyListFragment : Fragment() {
 
 
 
+    fun checkSeperate(){
+        seperateBox.setOnCheckedChangeListener { compoundButton, b ->
+            if(seperateBox.isChecked){
+                //check
+                initListLayout(true)
+            }else{
+                //uncheck
+                initListLayout(false)
+            }
+        }
+    }
 }

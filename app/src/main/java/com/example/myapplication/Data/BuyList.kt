@@ -14,20 +14,20 @@ class BuyList:Serializable {
 
     @DynamoDBHashKey(attributeName = "code")
     @DynamoDBAttribute(attributeName = "code")
-    fun getEventName():String{
+    fun getCodeNum():String{
         return num
     }
 
-    fun setEventName(num:String){
+    fun setCodeNum(num:String){
         this.num = num
     }
 
     @DynamoDBAttribute(attributeName = "item")
-    fun getEventImg():ArrayList<String>{
+    fun getItemList():ArrayList<String>{
         return item
     }
 
-    fun setEventImg(item:ArrayList<String>){
+    fun setItemList(item:ArrayList<String>){
         this.item = item
     }
 }
