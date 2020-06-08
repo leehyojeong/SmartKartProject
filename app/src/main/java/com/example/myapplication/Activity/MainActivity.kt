@@ -10,6 +10,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.location.*
+import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
@@ -25,6 +26,9 @@ import androidx.fragment.app.FragmentTransaction
 import com.amazonaws.auth.CognitoCachingCredentialsProvider
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedList
+import com.amazonaws.mobileconnectors.lambdainvoker.LambdaFunctionException
+import com.amazonaws.mobileconnectors.lambdainvoker.LambdaInvokerFactory
+import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.example.myapplication.CodePage.CodeFragment
 import com.example.myapplication.Data.*
@@ -87,18 +91,30 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
     var eventDialog:Dialog ?= null
     var searchDialog:Dialog ?= null
 
-
+    //연동 코드
+    lateinit var lambdacredentials:CognitoCachingCredentialsProvider
+    lateinit var factory: LambdaInvokerFactory
+    lateinit var myInterface:MyInterface
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main2)
 
+        //AWS 람다 함수 연결
+        lambdacredentials = CognitoCachingCredentialsProvider(this,"ap-northeast-2:78a1b59b-091f-4e12-ba88-047ad107cdf8",
+            Regions.AP_NORTHEAST_2)
+        factory = LambdaInvokerFactory(applicationContext, Regions.AP_NORTHEAST_2,lambdacredentials)
+        myInterface = factory.build(MyInterface::class.java)//잘 모르겠음
+        var request = RequestClass(true)
+        Log.d("aws_request",request.toString())
 
+        //AsyncTask를 이용한 카트 코드
+        val AWSAsyncTask2 = AWSAsyncTask2()
+        AWSAsyncTask2.execute(request)
 
-         getFileMart()
+        getFileMart()
         getFileEvent()
         getFileProduct()
-
 
         locationRequest.interval = UPDATE_INTERVAL_MS
         locationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_MS
@@ -111,6 +127,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
 
         checkPermissions()
         setNavigation()
+
     }
 
     override fun onDestroy() {
@@ -536,6 +553,26 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
                 ft.replace(R.id.frameLayout, CodeFragment.newInstace(product))
                 ft.commit()
             }
+        }
+    }
+
+    //코드 랜덤 발생 람다 async 함수
+    inner class AWSAsyncTask2 : AsyncTask<RequestClass, Void, ResponseClass>() {
+        override fun doInBackground(vararg params: RequestClass?): ResponseClass? {
+            Log.d("aws","doInBackground")
+            try{
+                return myInterface.smartKartCode(params[0])
+            } catch(lfe: LambdaFunctionException){
+                Log.e("Tag","Failed to invoke echo",lfe)
+                return null
+            }
+        }
+
+        override fun onPostExecute(result: ResponseClass?) {
+            if(result==null){
+                return
+            }
+            Log.d("async",result.authenticationCode)
         }
     }
 }
