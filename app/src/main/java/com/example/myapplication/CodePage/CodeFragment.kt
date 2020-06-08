@@ -92,7 +92,7 @@ class CodeFragment : Fragment() {
         fm = activity!!.supportFragmentManager
         ft = fm.beginTransaction()
 
-        ft.replace(R.id.frameLayout,BuyListFragment.newInstace(product))
+        ft.replace(R.id.frameLayout,BuyListFragment.newInstace(product,codeNum))
         ft.commit()
     }
 

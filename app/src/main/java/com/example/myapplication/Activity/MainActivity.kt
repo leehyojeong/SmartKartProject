@@ -42,6 +42,7 @@ import kotlinx.android.synthetic.main.fragment_code.*
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 
 
@@ -97,6 +98,11 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main2)
 
+        callInit()
+
+    }
+
+    fun callInit(){
         //AWS 람다 함수 연결
         lambdacredentials = CognitoCachingCredentialsProvider(this,"ap-northeast-2:78a1b59b-091f-4e12-ba88-047ad107cdf8",
             Regions.AP_NORTHEAST_2)
@@ -105,12 +111,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         var request = RequestClass(true)
         Log.d("aws_request",request.toString())
 
-        //AsyncTask를 이용한 카트 코드
-        val AWSAsyncTask2 = AWSAsyncTask2()
-        AWSAsyncTask2.execute(request)
-
-
-       setHandler()
+        setHandler()
 
         locationRequest.interval = UPDATE_INTERVAL_MS
         locationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_MS
@@ -123,6 +124,36 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
 
         checkPermissions()
 
+        //AsyncTask를 이용한 카트 코드
+        if(!getKartCode()){
+            val AWSAsyncTask2 = AWSAsyncTask2()
+            AWSAsyncTask2.execute(request)
+        }else{
+            var message = handler.obtainMessage()
+            message.arg1 = GET_CODE
+            handler.sendMessage(message)
+        }
+    }
+
+    fun getKartCode():Boolean{
+        var file = this.getFileStreamPath("KartCode.txt")
+//        var file = File("KartCode.txt")
+        if(file.exists()){
+            Log.d("카트번호","존재")
+            var inputStream = openFileInput("KartCode.txt")
+            if(inputStream != null){
+                var inputStreamReader = InputStreamReader(inputStream)
+                var ret = getFileString(inputStreamReader).replace("null","")
+                inputStream.close()
+                KartCode = ret
+                Log.d("카트번호",ret)
+            }
+            return true
+        }
+       else{
+            Log.d("카트번호","존재안함")
+            return false
+        }
     }
 
     fun setHandler(){
@@ -144,9 +175,9 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
 
     override fun onDestroy() {
         super.onDestroy()
-
-        eventDialog!!.dismiss()
-        searchDialog!!.dismiss()
+//
+//        eventDialog!!.dismiss()
+//        searchDialog!!.dismiss()
         finish()
     }
 
@@ -561,13 +592,6 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
 
         when (n) {
             1 -> {
-                //번들 객체 생성 - 인증코드 text 값으로 저장 - String 전달
-                // var bundle : Bundle = Bundle()
-                //bundle.putString("KartCode",KartCode)
-
-                //var codeFragment = CodeFragment.newInstace(product)
-                //codeFragment.arguments=bundle
-
                 // 연동코드 입력 프래그먼트
                 ft.replace(R.id.frameLayout, CodeFragment.newInstace(product,KartCode))
                 // ft.replace(R.id.frameLayout,codeFragment)
@@ -594,6 +618,12 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
             }
             Log.d("async",result.authenticationCode)
             KartCode = result.authenticationCode.toString()
+
+            //save KartCode
+            var outputStream = openFileOutput("KartCode.txt",Context.MODE_PRIVATE)
+            outputStream.write(KartCode.toByteArray())
+            outputStream.close()
+
             // codeBundle
             var message = handler.obtainMessage()
             message.arg1 = GET_CODE

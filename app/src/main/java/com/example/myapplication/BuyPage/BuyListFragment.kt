@@ -1,6 +1,7 @@
 package com.example.myapplication.BuyPage
 
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -8,6 +9,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,15 +20,18 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBScanExpr
 import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
+import com.example.myapplication.Activity.MainActivity
 import com.example.myapplication.BuyPage.OtherItemDialog.OtherItemDialog
 import com.example.myapplication.CodePage.CodeFragment
 import com.example.myapplication.Data.BuyList
 import com.example.myapplication.Data.Product
 import com.example.myapplication.Data.ProductData
+import com.example.myapplication.Data.RecommendData
 
 import com.example.myapplication.R
 import kotlinx.android.synthetic.main.fragment_buy_list.*
 import kotlinx.android.synthetic.main.fragment_buy_list.view.*
+import java.io.File
 
 /**
  * A simple [Fragment] subclass.
@@ -37,9 +42,11 @@ class BuyListFragment : Fragment() {
     var list:ArrayList<Product> = arrayListOf()//카트에 담긴 아이템 리스트
     var product:HashMap<String,Product> = hashMapOf()//전체 아이템 리스트
     var product_key:ArrayList<String> = arrayListOf()
+    var kartNum:String = "00000"
     lateinit var recycler:RecyclerView
     lateinit var total_price:TextView
     lateinit var seperateBox:CheckBox
+    lateinit var end_buy:Button
     var checkedList:ArrayList<Product> = arrayListOf()
 
 
@@ -54,10 +61,11 @@ class BuyListFragment : Fragment() {
 
 
     companion object{
-        fun newInstace(product:HashMap<String,Product>):Fragment{
+        fun newInstace(product:HashMap<String,Product>,kartNum:String):Fragment{
             var butFrag = BuyListFragment()
             var args = Bundle()
             args.putSerializable("PRODUCT",product)
+            args.putString("KART",kartNum)
             butFrag.arguments = args
             return butFrag
         }
@@ -67,7 +75,9 @@ class BuyListFragment : Fragment() {
         super.onCreate(savedInstanceState)
         if(arguments != null){
             this.product = arguments!!.getSerializable("PRODUCT") as HashMap<String,Product>
+            this.kartNum = (arguments!!.getString("KART").toString()).replace("인증코드 : ","")
             Log.d("물품",product.size.toString())
+            Log.d("카트번호 번들",kartNum)
         }
     }
 
@@ -80,6 +90,7 @@ class BuyListFragment : Fragment() {
         recycler = v.total_list
         total_price = v.total_price
         seperateBox = v.seperateBox
+        end_buy = v.end_buy
         getAWS()//get AWS DynamoDB
         init()
         checkSeperate()
@@ -92,6 +103,7 @@ class BuyListFragment : Fragment() {
         ddb = AmazonDynamoDBClient(credentials)
         ddb!!.setRegion((Region.getRegion(Regions.AP_NORTHEAST_2)))
         dynamoDBMapper = DynamoDBMapper.builder().dynamoDBClient(ddb).build()
+        Log.d("카트번호 AWS",dynamoDBMapper.toString())
     }
 
     fun loadData(){
@@ -101,12 +113,17 @@ class BuyListFragment : Fragment() {
                Log.d("코드 product",product.values.toString())
                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
                var scanItem = dynamoDBMapper!!.scan(BuyList::class.java, DynamoDBScanExpression())
-               var item = dynamoDBMapper!!.load(BuyList::class.java,"2222")
-               Log.d("코드 product",item.toString())
-               for(i in 0 until item.item.size){
-                   Log.d("코드 물건 하나",item.item[i])
-                   product_key.add(item.item[i])
+               var item = dynamoDBMapper!!.load(BuyList::class.java, kartNum)
+               if(item != null){
+                   Log.d("코드 product",item.toString())
+                   for(i in 0 until item.item.size){
+                       Log.d("코드 물건 하나",item.item[i])
+                       product_key.add(item.item[i])
+                   }
+               }else{
+                   product_key = arrayListOf()
                }
+
                var message = handler.obtainMessage()
                message.arg1 = READ_BUY_LIST
                handler.sendMessage(message)
@@ -115,6 +132,7 @@ class BuyListFragment : Fragment() {
     }
 
     fun init(){
+
         loadData()
         handler = Handler(Handler.Callback {
             when(it.arg1){
@@ -125,6 +143,19 @@ class BuyListFragment : Fragment() {
             }
             return@Callback true
         })
+
+
+        end_buy.setOnClickListener {
+            var file = context!!.getFileStreamPath("KartCode.txt")
+            file.delete()
+
+            //end fragment
+            var manager = activity!!.supportFragmentManager
+            manager.beginTransaction().remove(this).commit()
+            manager.popBackStack()
+
+            (activity as MainActivity).callInit()
+        }
     }
 
     fun makeList(){
@@ -138,7 +169,7 @@ class BuyListFragment : Fragment() {
     }
 
     fun initListLayout(isCheck:Boolean){
-        adapter = ItemListAdapter(list,context!!,true,isCheck)//갯수 표시를 해줌
+        adapter = ItemListAdapter(list,context!!,true,isCheck,checkedList)//갯수 표시를 해줌
         val layoutManager = LinearLayoutManager(context!!,LinearLayoutManager.VERTICAL,false)
         recycler.layoutManager = layoutManager
         recycler.adapter = adapter
@@ -170,11 +201,15 @@ class BuyListFragment : Fragment() {
                 //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
                 if(holder.check.isChecked){
                     checkedList.add(list[position])
-                    Log.d("체크",data.toString())
+                    Log.d("체크 fragment",data.toString())
+                }else{
+                    checkedList.remove(list[position])
+                    Log.d("체크 fragment","Unchecked "+data.toString())
                 }
             }
-
         }
+
+
 
         //구매한 물건 총 금액
         var total = 0
@@ -191,6 +226,16 @@ class BuyListFragment : Fragment() {
                 initListLayout(true)
             }else{
                 //uncheck
+                if(checkedList.size >0){
+                    //something in this list
+                    //seperate product
+                    for(seperate in checkedList){
+                        if(list.contains(seperate)){
+                            list.remove(seperate)
+                        }
+                    }
+                    list =  (list + checkedList) as ArrayList<Product>
+                }
                 initListLayout(false)
             }
         }
