@@ -77,6 +77,7 @@ class SearchDialog(context: Context,product_map:HashMap<String,Product>) : Dialo
     fun makeList(name:String){
         Log.d("검색 함수","클릭")
         //유사 상품 리스트
+        list = arrayListOf()
         for(item in product.keys){
             Log.d("검색",item)
             if(item.contains(name)){

@@ -62,6 +62,7 @@ class BuyListFragment : Fragment() {
         super.onCreate(savedInstanceState)
         if(arguments != null){
             this.product = arguments!!.getSerializable("PRODUCT") as HashMap<String,Product>
+            Log.d("물품",product.size.toString())
         }
     }
 
@@ -92,7 +93,7 @@ class BuyListFragment : Fragment() {
                product_key = arrayListOf()
                Log.d("코드 product",product.values.toString())
                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-               var item = dynamoDBMapper!!.load(BuyList::class.java,"202005300001")
+               var item = dynamoDBMapper!!.load(BuyList::class.java,"2222")
                for(i in 0..item.item.size-1){
                    product_key.add(item.item[i])
                }
@@ -140,7 +141,7 @@ class BuyListFragment : Fragment() {
             ) {
                // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
                 //아이템 하나를 클릭했을 때 다이얼로그 보여줌
-                var otherDialog = OtherItemDialog(context!!,list[position])
+                var otherDialog = OtherItemDialog(context!!,list[position],product)
                 otherDialog.show()
             }
 

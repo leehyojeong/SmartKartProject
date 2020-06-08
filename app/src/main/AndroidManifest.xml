@@ -31,7 +31,9 @@
             android:theme="@style/AppTheme.yellow_notitle" />
         <activity
             android:name=".Activity.MainActivity"
-            android:theme="@style/AppTheme.yellow_notitle">
+            android:theme="@style/AppTheme.yellow_notitle"
+            android:hardwareAccelerated="false"
+            android:allowBackup="false" android:fullBackupContent="false">
 
         </activity>
 

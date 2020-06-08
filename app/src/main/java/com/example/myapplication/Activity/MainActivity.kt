@@ -6,12 +6,17 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.location.*
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
+import android.util.AttributeSet
+import android.util.Base64
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -37,8 +42,12 @@ import com.google.android.gms.location.LocationListener
 import com.google.android.gms.maps.model.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.android.synthetic.main.fragment_code.*
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.ByteArrayOutputStream
+import java.io.InputStreamReader
 
 
 class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,LocationListener{
@@ -84,11 +93,9 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main2)
 
-
-//        getIntentData()
-        martDataLocation = getMartToJson("AMAZON_MART")
-        eventData = getEventToJson("AMAZON_EVENT")
-        product = getProductToJson("AMAZON_PRODUCT")
+         getFileMart()
+        getFileEvent()
+        getFileProduct()
 
         locationRequest.interval = UPDATE_INTERVAL_MS
         locationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_MS
@@ -102,41 +109,99 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         setNavigation()
     }
 
-    //data get from sharedPreference
-    fun getMartToJson(key:String):ArrayList<MyLocation>{
-        var prefs = getSharedPreferences("AMAZON_DATA", Activity.MODE_PRIVATE)
-        var json = prefs.getString(key,null)
-        var array = arrayListOf<MyLocation>()
+    override fun onDestroy() {
+        super.onDestroy()
 
-        var gson = Gson()
-        var type = object:TypeToken<ArrayList<MyLocation>>(){}.type
-        array = gson.fromJson(json,type)
-        return array
+        eventDialog!!.dismiss()
+        searchDialog!!.dismiss()
+        finish()
     }
 
-    fun getEventToJson(key:String):ArrayList<EventItem>{
-        var prefs = getSharedPreferences("AMAZON_DATA", Activity.MODE_PRIVATE)
-        var json = prefs.getString(key,null)
-        var array = arrayListOf<EventItem>()
-        var gson = Gson()
-        var type = object:TypeToken<ArrayList<EventItem>>(){}.type
-        array = gson.fromJson(json,type)
-        return array
-    }
 
-    fun getProductToJson(key:String):HashMap<String,Product>{
-        var prefs = getSharedPreferences("AMAZON_DATA", Activity.MODE_PRIVATE)
-        var json = prefs.getString(key,null)
-        var array = arrayListOf<Product>()
-        var gson = Gson()
-        var type = object:TypeToken<ArrayList<Product>>(){}.type
-        array = gson.fromJson(json,type)
+    fun getFileString(inputStream:InputStreamReader):String{
+        var inputStreamReader = inputStream
+        var bufferedReader = BufferedReader(inputStreamReader)
+        var returnString:String ?= ""
+        var stringBuilder = StringBuilder()
 
-        var output = hashMapOf<String,Product>()
-        for(i in array){
-            output.put(i.name,i)
+        while(returnString != null){
+            returnString = bufferedReader.readLine()
+            stringBuilder.append(returnString)
         }
-        return output
+
+        return stringBuilder.toString()
+    }
+
+
+    //get data from inFile
+    fun getFileMart(){
+        var inputStream = openFileInput("amazon_mart.json")
+
+        if(inputStream != null){
+            var inputStreamReader = InputStreamReader(inputStream)
+            var ret = getFileString(inputStreamReader)
+            inputStream.close()
+            var jArray = JSONArray(ret)
+            for(index in 0 until jArray.length()){
+                var jObj = JSONObject(jArray[index].toString())
+                var name = jObj.getString("name")
+                var latitude = jObj.getString("latitude").toDouble()
+                var longitude = jObj.getString("longitude").toDouble()
+                martDataLocation.add(MyLocation(latitude,longitude,name))
+            }
+        }
+    }
+
+
+    fun getFileEvent(){
+        var inputStream = openFileInput("amazon_event.json")
+        if(inputStream != null){
+            var inputStreamReader = InputStreamReader(inputStream)
+            var ret = getFileString(inputStreamReader)
+            inputStream.close()
+            var jArray = JSONArray(ret)
+            for(index in 0 until jArray.length()){
+                var jObj = JSONObject(jArray[index].toString())
+                var name = jObj.getString("name")
+                var img = jObj.getString("img")
+                Log.d("비트맵",img)
+                var encodeByte = Base64.decode(img,Base64.DEFAULT)
+                Log.d("비트맵",encodeByte.toString())
+                var bitmap = BitmapFactory.decodeByteArray(encodeByte,0,encodeByte.size)
+
+                eventData.add(EventItem(name,bitmap))
+            }
+        }
+    }
+
+    fun getFileProduct(){
+        var inputStream = openFileInput("amazon_product.json")
+        if(inputStream != null) {
+            var inputStreamReader = InputStreamReader(inputStream)
+            var ret = getFileString(inputStreamReader)
+            inputStream.close()
+            var jArray = JSONArray(ret)
+            for(index in 0 until jArray.length()){
+                var jObj = JSONObject(jArray[index].toString())
+                Log.d("제이슨",jObj.toString())
+
+                var name = jObj.getString("name")
+                Log.d("제이슨 이름",name)
+
+                var num = jObj.getString("num").toInt()
+                var price = jObj.getString("price").toInt()
+
+                var category_id = jObj.getString("category_id")
+                var gprice = jObj.getString("gprice")
+
+                var img = jObj.getString("img")
+
+                var encodeByte = Base64.decode(img,Base64.NO_WRAP)
+                var bitmap = BitmapFactory.decodeByteArray(encodeByte,0,encodeByte.size)
+
+                product.put(name,Product(bitmap,name,num,price,category_id,gprice))
+            }
+        }
     }
 
     //MAP
@@ -249,18 +314,13 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         myLocation.latitude = location.latitude
         myLocation.longitude = location.longitude
 
-        var myLoc = MarkerOptions()
-        myLoc.position(currentLatLng)
-        myLoc.title("현재 위치")
-        mMap.addMarker(myLoc)
-
         Log.d("권한", "나의 현재 위치 $location")
 
         //마트 좌표 찍기
         for (i in 0..martDataLocation!!.size-1){
 
-            Log.d("마트좌표",martDataLocation[i].toString())
-            if(martDataLocation[i].latitude == 0.0){
+            Log.d("마트좌표",martDataLocation!![i].toString())
+            if(martDataLocation!![i].latitude == 0.0){
                 continue
             }
             var markerOptions = MarkerOptions()
@@ -268,11 +328,11 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
 
             //마트 좌표
             var martLocation = Location(martDataLocation!![i].name)
-            martLocation.latitude = martDataLocation[i].latitude!!
-            martLocation.longitude = martDataLocation[i].longitude!!
+            martLocation.latitude = martDataLocation!![i].latitude!!
+            martLocation.longitude = martDataLocation!![i].longitude!!
 
             if(myLocation.distanceTo(martLocation) <= 300000000){
-                var latlng = LatLng(martDataLocation[i].latitude!!,martDataLocation[i].longitude!!)
+                var latlng = LatLng(martDataLocation!![i].latitude!!,martDataLocation!![i].longitude!!)
                 markerOptions.position(latlng)
                 markerOptions.title(martDataLocation!![i].name)
                 currentMarker = mMap.addMarker(markerOptions)
@@ -420,6 +480,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         when(n){
             0->{
                 //이벤트 다이얼로그
+                Log.d("이벤트","이벤트 클릭")
                 eventDialog = EventDialog(this,eventData!!)
                 eventDialog!!.show()
                 eventDialog!!.setOnCancelListener {
