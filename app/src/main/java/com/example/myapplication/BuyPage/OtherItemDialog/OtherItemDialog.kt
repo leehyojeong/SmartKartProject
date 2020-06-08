@@ -3,6 +3,7 @@ package com.example.myapplication.BuyPage.OtherItemDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
@@ -37,6 +38,10 @@ class OtherItemDialog(context: Context,item: Product,product:HashMap<String,Prod
     var ddb : AmazonDynamoDBClient?= null
     lateinit var credentials: CognitoCachingCredentialsProvider
 
+    //Handler
+    lateinit var handler: Handler
+    var READ_RECOMMEND_DATA = 8888
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,10 +59,18 @@ class OtherItemDialog(context: Context,item: Product,product:HashMap<String,Prod
 
         window!!.attributes = layoutParams
 
-        list = arrayListOf()
-
         getAWS()
         makeList()
+
+        handler = Handler(Handler.Callback {
+            when(it.arg1){
+                READ_RECOMMEND_DATA->{
+//                    makeList()
+                    initLayout()
+                }
+            }
+            return@Callback true
+        })
     }
 
     fun getAWS(){
@@ -67,21 +80,14 @@ class OtherItemDialog(context: Context,item: Product,product:HashMap<String,Prod
         dynamoDBMapper = DynamoDBMapper.builder().dynamoDBClient(ddb).build()
     }
 
-    fun loadData(item:Product){
-        Thread(object:Runnable{
-            override fun run() {
-                list = arrayListOf()
-                Log.d("코드 product",product.values.toString())
-                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                var item = dynamoDBMapper!!.load(RecommendData::class.java)
-
-            }
-        }).start()
-    }
-
     fun initLayout(){
+
+        select_item_name.text =  item.name
+        select_item_price.text = item.price.toString()
+        select_item_img.setImageBitmap(item.img)
+
         Log.d("확인","initLayout")
-        adapter = ItemListAdapter(list,context!!,false)//갯수 표시를 안해줌
+        adapter = ItemListAdapter(list,context!!,false,false)//갯수 표시를 안해줌
         val layoutManager = LinearLayoutManager(context!!, LinearLayoutManager.VERTICAL,false)
         select_list.layoutManager = layoutManager
         select_list.adapter = adapter
@@ -89,6 +95,24 @@ class OtherItemDialog(context: Context,item: Product,product:HashMap<String,Prod
 
     fun makeList(){
         //유사 상품 리스트
-        list = arrayListOf()
+        var thread = GetRecommendData()
+        thread.start()
+    }
+
+    inner class GetRecommendData(): Thread() {
+        override fun run() {
+            super.run()
+            list = arrayListOf()
+            Log.d("코드 product",product.values.toString())
+            //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            var item = dynamoDBMapper!!.load(RecommendData::class.java,item.name)
+            for(i in 0 until item.recommends.size){
+                list.add(product.get(item.recommends[i])!!)
+                Log.d("다른아이템",item.recommends[i])
+            }
+            var message = handler.obtainMessage()
+            message.arg1 = READ_RECOMMEND_DATA
+            handler.sendMessage(message)
+        }
     }
 }

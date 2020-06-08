@@ -68,7 +68,7 @@ class SearchDialog(context: Context,product_map:HashMap<String,Product>) : Dialo
     }
 
     fun initLayout(){
-        adapter = ItemListAdapter(list, context,false)
+        adapter = ItemListAdapter(list, context,false,false)
         val layoutManager = LinearLayoutManager(context!!, LinearLayoutManager.VERTICAL,false)
         search_list.layoutManager = layoutManager
         search_list.adapter = adapter
