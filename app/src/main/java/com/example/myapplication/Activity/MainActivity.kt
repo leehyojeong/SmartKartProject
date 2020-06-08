@@ -11,6 +11,7 @@ import android.location.*
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.provider.Settings
 import android.util.Base64
 import android.util.Log
@@ -37,6 +38,7 @@ import kotlinx.android.synthetic.main.activity_main2.*
 import kotlin.collections.ArrayList
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.maps.model.*
+import kotlinx.android.synthetic.main.fragment_code.*
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -84,8 +86,12 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
     lateinit var lambdacredentials:CognitoCachingCredentialsProvider
     lateinit var factory: LambdaInvokerFactory
     lateinit var myInterface:MyInterface
-    lateinit var KartCode:String
+    var KartCode:String = "00000"
     lateinit var codeBundle: Bundle
+
+    //Handler
+    lateinit var handler: Handler
+    var GET_CODE = 9878
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,9 +109,8 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         val AWSAsyncTask2 = AWSAsyncTask2()
         AWSAsyncTask2.execute(request)
 
-        getFileMart()
-        getFileEvent()
-        getFileProduct()
+
+       setHandler()
 
         locationRequest.interval = UPDATE_INTERVAL_MS
         locationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_MS
@@ -117,8 +122,24 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
             .build()
 
         checkPermissions()
-        setNavigation()
 
+    }
+
+    fun setHandler(){
+        handler = Handler(Handler.Callback {
+            //스레드 작업이 끝나면 할 것
+            when(it.arg1){
+                GET_CODE->{
+                    setNavigation()
+                    getFileMart()
+                    getFileEvent()
+                    getFileProduct()
+
+
+                }
+            }
+            return@Callback true
+        })
     }
 
     override fun onDestroy() {
@@ -548,7 +569,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
                 //codeFragment.arguments=bundle
 
                 // 연동코드 입력 프래그먼트
-                ft.replace(R.id.frameLayout, CodeFragment.newInstace(product))
+                ft.replace(R.id.frameLayout, CodeFragment.newInstace(product,KartCode))
                 // ft.replace(R.id.frameLayout,codeFragment)
                 ft.commit()
             }
@@ -571,9 +592,13 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
             if(result==null){
                 return
             }
-            // KartCode = result.authenticationCode.toString()
-            // codeBundle
             Log.d("async",result.authenticationCode)
+            KartCode = result.authenticationCode.toString()
+            // codeBundle
+            var message = handler.obtainMessage()
+            message.arg1 = GET_CODE
+            handler.sendMessage(message)
+
         }
     }
 }

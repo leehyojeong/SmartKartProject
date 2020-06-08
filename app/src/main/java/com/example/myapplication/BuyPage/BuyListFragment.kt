@@ -167,8 +167,6 @@ class BuyListFragment : Fragment() {
         total_price.text = total.toString()
     }
 
-
-
     fun checkSeperate(){
         seperateBox.setOnCheckedChangeListener { compoundButton, b ->
             if(seperateBox.isChecked){
