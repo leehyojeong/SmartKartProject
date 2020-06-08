@@ -63,10 +63,12 @@ class EventDialog(context: Context, argeventList:ArrayList<EventItem>) : Dialog(
 
     fun changeImage(image:Bitmap,title:String){
         var context = context!!.applicationContext
-        val eventLayout = LinearLayout(context)
-        eventLayout.orientation = LinearLayout.VERTICAL
-        val textView = TextView(context)
-        val imageView = ImageView(context)
+//        Log.d("컨",context.toString())
+//        val eventLayout = LinearLayout(context)
+        val eventLayout = CustomEventFlipItem(context)
+//        eventLayout.orientation = LinearLayout.VERTICAL
+//        val textView = TextView(context)
+//        val imageView = ImageView(context)
         Log.d("이벤트",image.toString())
 
 //        var baos = ByteArrayOutputStream()
@@ -76,18 +78,18 @@ class EventDialog(context: Context, argeventList:ArrayList<EventItem>) : Dialog(
 //        Log.d("이벤트",b.toString())
 //        var imageAsBytes = BitmapFactory.decodeByteArray(b,0,b.size)
 
-        imageView.setImageBitmap(image)
+//        imageView.setImageBitmap(image)
+        eventLayout.e_image.setImageBitmap(image)
         Log.d("이벤트 setImageBitmap","setImage")
 //        var options = BitmapFactory.Options().apply {
 //            inJustDecodeBounds = true
 //        }
 
+//        textView.text = title
+        eventLayout.e_text.text=title
 
-        textView.text = title
-
-
-        eventLayout.addView(imageView)
-        eventLayout.addView(textView)
+//        eventLayout.addView(imageView)
+//        eventLayout.addView(textView)
 
         event_slide.addView(eventLayout)
         event_slide.flipInterval = 3000//1000에 1초
