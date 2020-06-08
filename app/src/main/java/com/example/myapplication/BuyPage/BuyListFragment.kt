@@ -40,6 +40,7 @@ class BuyListFragment : Fragment() {
     lateinit var recycler:RecyclerView
     lateinit var total_price:TextView
     lateinit var seperateBox:CheckBox
+    var checkedList:ArrayList<Product> = arrayListOf()
 
 
     //AWS
@@ -155,6 +156,22 @@ class BuyListFragment : Fragment() {
                 //아이템 하나를 클릭했을 때 다이얼로그 보여줌
                 var otherDialog = OtherItemDialog(context!!,list[position],product)
                 otherDialog.show()
+            }
+
+        }
+
+        adapter.itemCheckedListener = object:ItemListAdapter.OnItemCheckListener{
+            override fun OnItemChecked(
+                holder: ItemListAdapter.ViewHolder,
+                view: View,
+                data: Product,
+                position: Int
+            ) {
+                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                if(holder.check.isChecked){
+                    checkedList.add(list[position])
+                    Log.d("체크",data.toString())
+                }
             }
 
         }
