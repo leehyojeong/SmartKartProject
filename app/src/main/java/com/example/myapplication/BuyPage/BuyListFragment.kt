@@ -1,7 +1,9 @@
 package com.example.myapplication.BuyPage
 
 
+import android.app.Dialog
 import android.content.Intent
+import android.graphics.Point
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -21,16 +23,19 @@ import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.example.myapplication.Activity.MainActivity
+import com.example.myapplication.Activity.MainFragment
 import com.example.myapplication.BuyPage.OtherItemDialog.OtherItemDialog
 import com.example.myapplication.CodePage.CodeFragment
-import com.example.myapplication.Data.BuyList
-import com.example.myapplication.Data.Product
-import com.example.myapplication.Data.ProductData
-import com.example.myapplication.Data.RecommendData
+import com.example.myapplication.Data.*
+import com.example.myapplication.MainDialog.EventDialog.EventDialog
+import com.example.myapplication.MainDialog.SearchDialog.SearchDialog
 
 import com.example.myapplication.R
+import com.google.android.gms.maps.SupportMapFragment
+import kotlinx.android.synthetic.main.activity_main2.*
 import kotlinx.android.synthetic.main.fragment_buy_list.*
 import kotlinx.android.synthetic.main.fragment_buy_list.view.*
+import kotlinx.android.synthetic.main.search_dialog.*
 import java.io.File
 
 /**
@@ -59,6 +64,9 @@ class BuyListFragment : Fragment() {
     lateinit var handler:Handler
     var READ_BUY_LIST = 7777
 
+    //Dialog Variable
+    var eventDialog: Dialog?= null
+    var searchDialog: Dialog?= null
 
     companion object{
         fun newInstace(product:HashMap<String,Product>,kartNum:String):Fragment{
@@ -240,4 +248,5 @@ class BuyListFragment : Fragment() {
             }
         }
     }
+
 }

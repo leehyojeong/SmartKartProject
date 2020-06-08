@@ -21,9 +21,12 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.amazonaws.auth.CognitoCachingCredentialsProvider
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper
 import com.amazonaws.mobileconnectors.lambdainvoker.LambdaFunctionException
 import com.amazonaws.mobileconnectors.lambdainvoker.LambdaInvokerFactory
+import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.example.myapplication.CodePage.CodeFragment
 import com.example.myapplication.Data.*
 import com.example.myapplication.MainDialog.EventDialog.EventDialog
@@ -44,6 +47,7 @@ import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import kotlin.concurrent.thread
 
 
 class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,LocationListener{
@@ -94,6 +98,8 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
     lateinit var handler: Handler
     var GET_CODE = 9878
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main2)
@@ -101,6 +107,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         callInit()
 
     }
+
 
     fun callInit(){
         //AWS 람다 함수 연결
@@ -156,11 +163,16 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         }
     }
 
+    fun saveKartNum(){
+
+    }
+
     fun setHandler(){
         handler = Handler(Handler.Callback {
             //스레드 작업이 끝나면 할 것
             when(it.arg1){
                 GET_CODE->{
+
                     setNavigation()
                     getFileMart()
                     getFileEvent()
