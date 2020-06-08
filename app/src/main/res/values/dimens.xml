@@ -14,6 +14,7 @@
     <dimen name="search_btn_width">15dp</dimen>
     <dimen name="square_height">350dp</dimen>
     <dimen name="square_width">350dp</dimen>
+    <dimen name="half_square">200dp</dimen>
     <dimen name="line_height">1.5dp</dimen>
     <dimen name="yellow_back_height">200dp</dimen>
     <dimen name="item_container_height">150dp</dimen>
