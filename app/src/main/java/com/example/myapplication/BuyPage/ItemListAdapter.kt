@@ -17,11 +17,16 @@ import com.example.myapplication.R
 class ItemListAdapter(var items:ArrayList<Product>, val context:Context, var hasCount:Boolean,var isCheck:Boolean):RecyclerView.Adapter<ItemListAdapter.ViewHolder>() {
 
     var itemClickListener:OnItemClickListener ?= null
+    var itemCheckedListener:OnItemCheckListener ?= null
+    var check_list:ArrayList<Product> = arrayListOf()
 
     interface OnItemClickListener{
         fun OnItemClick(holder:ItemListAdapter.ViewHolder, view:View, data: Product, position:Int)
     }
 
+    interface OnItemCheckListener{
+        fun OnItemChecked(holder:ItemListAdapter.ViewHolder,view:View,data:Product,position:Int)
+    }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         val v = LayoutInflater.from(parent.context).inflate(R.layout.item_list,parent,false)
@@ -56,6 +61,11 @@ class ItemListAdapter(var items:ArrayList<Product>, val context:Context, var has
 
         if(isCheck){
          holder.check.visibility =  View.VISIBLE
+            holder.check.setOnCheckedChangeListener { compoundButton, b ->
+                if(holder.check.isChecked){
+                    check_list.add(items[position])
+                }
+            }
         }else{
             holder.check.visibility = View.INVISIBLE
         }
@@ -78,6 +88,7 @@ class ItemListAdapter(var items:ArrayList<Product>, val context:Context, var has
             itemView.setOnClickListener {
                 val position = adapterPosition
                 itemClickListener?.OnItemClick(this,it,items[position],position)
+                itemCheckedListener?.OnItemChecked(this,it,items[position],position)
             }
         }
     }
