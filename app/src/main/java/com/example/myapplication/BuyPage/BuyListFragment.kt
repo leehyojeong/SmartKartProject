@@ -44,6 +44,7 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlinx.android.synthetic.main.search_dialog.*
 import java.io.File
+import java.util.concurrent.ScheduledExecutorService
 
 /**
  * A simple [Fragment] subclass.
@@ -130,9 +131,8 @@ class BuyListFragment : Fragment() {
 
         initListLayout(false)
         makeAdapter()
-        startTimer()
-
         init()
+        startTimer()
         checkSeperate()
         return v
     }
@@ -141,13 +141,16 @@ class BuyListFragment : Fragment() {
         thread = object : Thread() {
             override fun run() {
                 super.run()
+                Log.d("스레드","돌고있음")
                 var msg = handler.obtainMessage()
                 if (msg.arg1 == READ_BUY_LIST) {
                     handler.sendMessage(msg)
                 }
             }
         }
-        thread.start()
+//        thread.start()
+
+        handler.postDelayed(thread,9000)
 
         handler = Handler() {
             Log.d("핸들러", "READ LIST")
