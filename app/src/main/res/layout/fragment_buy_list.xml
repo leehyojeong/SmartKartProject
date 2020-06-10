@@ -138,14 +138,17 @@
             android:id="@+id/seperateBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
             android:text="따로계산할게요"
-            app:layout_constraintBottom_toTopOf="@+id/buy_list_container"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.926"
-            app:layout_constraintStart_toStartOf="@+id/yellow_top_background"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="1.0" />
+            android:paddingBottom="1dp"
+            android:paddingRight="@dimen/div_padding_10"
+
+            android:textSize="10dp"
+            android:textColor="#262626"
+            android:fontFamily="@font/apple_neo_sb"
+
+            android:layout_marginRight="@dimen/div_margin_20"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/buy_list_container"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>
