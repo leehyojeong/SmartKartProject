@@ -117,6 +117,8 @@ class BuyListFragment : Fragment() {
         total_price = v.total_price
         seperateBox = v.seperateBox
         end_buy = v.end_buy
+
+
         getAWS()//get AWS DynamoDB
 
         lambdacredentials = CognitoCachingCredentialsProvider(
@@ -203,9 +205,13 @@ class BuyListFragment : Fragment() {
             thread.interrupt()
             //end fragment
             var manager = activity!!.supportFragmentManager
+            var ft = manager.beginTransaction()
             manager.beginTransaction().remove(this).commit()
             manager.popBackStack()
 
+//            ft.replace(R.id.frameLayout, CodeFragment.newInstace(product,kartNum))
+//            // ft.replace(R.id.frameLayout,codeFragment)
+//            ft.commit()
             (activity as MainActivity).callInit()
         }
     }
@@ -232,50 +238,93 @@ class BuyListFragment : Fragment() {
         val layoutManager = LinearLayoutManager(context!!, LinearLayoutManager.VERTICAL, false)
         recycler.layoutManager = layoutManager
         recycler.adapter = adapter
+
+        //아이템 클릭 했을 때 다이얼로그
+        //비슷한 정보의 다른 아이템 보여줌
+        adapter.itemClickListener = object : ItemListAdapter.OnItemClickListener {
+            override fun OnItemClick(
+                holder: ItemListAdapter.ViewHolder,
+                view: View,
+                data: Product,
+                position: Int
+            ) {
+                // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                //아이템 하나를 클릭했을 때 다이얼로그 보여줌
+                var otherDialog = OtherItemDialog(context!!, list[position], product)
+                otherDialog.show()
+            }
+
+        }
+
+        adapter.itemCheckedListener = object : ItemListAdapter.OnItemCheckListener {
+            override fun OnItemChecked(
+                holder: ItemListAdapter.ViewHolder,
+                view: View,
+                data: Product,
+                position: Int
+            ) {
+                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                if (holder.check.isChecked) {
+                    checkedList.add(list[position])
+                    Log.d("체크 fragment", data.toString())
+                } else {
+                    checkedList.remove(list[position])
+                    Log.d("체크 fragment", "Unchecked " + data.toString())
+                }
+            }
+
+        }
+
+        //구매한 물건 총 금액
+        var total = 0
+        for (l in list) {
+            total += (l.num * l.price)
+        }
+        total_price.text = total.toString()
     }
         fun makeAdapter() {
-            //아이템 클릭 했을 때 다이얼로그
-            //비슷한 정보의 다른 아이템 보여줌
-            adapter.itemClickListener = object : ItemListAdapter.OnItemClickListener {
-                override fun OnItemClick(
-                    holder: ItemListAdapter.ViewHolder,
-                    view: View,
-                    data: Product,
-                    position: Int
-                ) {
-                    // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                    //아이템 하나를 클릭했을 때 다이얼로그 보여줌
-                    var otherDialog = OtherItemDialog(context!!, list[position], product)
-                    otherDialog.show()
-                }
-
-            }
-
-            adapter.itemCheckedListener = object : ItemListAdapter.OnItemCheckListener {
-                override fun OnItemChecked(
-                    holder: ItemListAdapter.ViewHolder,
-                    view: View,
-                    data: Product,
-                    position: Int
-                ) {
-                    //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                    if (holder.check.isChecked) {
-                        checkedList.add(list[position])
-                        Log.d("체크 fragment", data.toString())
-                    } else {
-                        checkedList.remove(list[position])
-                        Log.d("체크 fragment", "Unchecked " + data.toString())
-                    }
-                }
-
-            }
-
-            //구매한 물건 총 금액
-            var total = 0
-            for (l in list) {
-                total += (l.num * l.price)
-            }
-            total_price.text = total.toString()
+//            //아이템 클릭 했을 때 다이얼로그
+//            //비슷한 정보의 다른 아이템 보여줌
+//            adapter.itemClickListener = object : ItemListAdapter.OnItemClickListener {
+//                override fun OnItemClick(
+//                    holder: ItemListAdapter.ViewHolder,
+//                    view: View,
+//                    data: Product,
+//                    position: Int
+//                ) {
+//                    // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+//                    //아이템 하나를 클릭했을 때 다이얼로그 보여줌
+//                    var otherDialog = OtherItemDialog(context!!, list[position], product)
+//                    otherDialog.show()
+//                }
+//
+//            }
+//
+//            adapter.itemCheckedListener = object : ItemListAdapter.OnItemCheckListener {
+//                override fun OnItemChecked(
+//                    holder: ItemListAdapter.ViewHolder,
+//                    view: View,
+//                    data: Product,
+//                    position: Int
+//                ) {
+//                    //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+//                    if (holder.check.isChecked) {
+//                        checkedList.add(list[position])
+//                        Log.d("체크 fragment", data.toString())
+//                    } else {
+//                        checkedList.remove(list[position])
+//                        Log.d("체크 fragment", "Unchecked " + data.toString())
+//                    }
+//                }
+//
+//            }
+//
+//            //구매한 물건 총 금액
+//            var total = 0
+//            for (l in list) {
+//                total += (l.num * l.price)
+//            }
+//            total_price.text = total.toString()
         }
 
     fun checkSeperate() {
