@@ -200,6 +200,7 @@ class BuyListFragment : Fragment() {
             var file = context!!.getFileStreamPath("KartCode.txt")
             file.delete()
 
+            thread.interrupt()
             //end fragment
             var manager = activity!!.supportFragmentManager
             manager.beginTransaction().remove(this).commit()
