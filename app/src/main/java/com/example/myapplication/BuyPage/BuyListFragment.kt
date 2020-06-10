@@ -159,6 +159,19 @@ class BuyListFragment : Fragment() {
         }
     }
 
+    fun DialogSize(dialog:Dialog){
+        //크기를 조절하는 함수
+        val display = activity!!.windowManager.defaultDisplay
+        val size = Point()
+        display.getSize(size)
+
+        var window = dialog.window
+
+        var x = (size.x * 1f).toInt()
+        var y = (size.y * 0.8f).toInt()
+
+        window!!.setLayout(x,y)
+    }
 
     fun getAWS() {
         credentials = CognitoCachingCredentialsProvider(
@@ -252,6 +265,8 @@ class BuyListFragment : Fragment() {
                 //아이템 하나를 클릭했을 때 다이얼로그 보여줌
                 var otherDialog = OtherItemDialog(context!!, list[position], product)
                 otherDialog.show()
+
+                DialogSize(otherDialog!!)
             }
         }
 

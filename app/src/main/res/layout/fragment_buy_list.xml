@@ -142,7 +142,7 @@
             android:paddingBottom="1dp"
             android:paddingRight="@dimen/div_padding_10"
 
-            android:textSize="10dp"
+            android:textSize="12dp"
             android:textColor="#262626"
             android:fontFamily="@font/apple_neo_sb"
 
