@@ -203,9 +203,13 @@ class BuyListFragment : Fragment() {
             thread.interrupt()
             //end fragment
             var manager = activity!!.supportFragmentManager
-            manager.beginTransaction().remove(this).commit()
-            manager.popBackStack()
+            var ft = manager.beginTransaction()
+            //manager.beginTransaction().remove(this).commit()
+            //manager.popBackStack()
 
+            ft.replace(R.id.frameLayout, CodeFragment.newInstace(product,kartNum))
+            // ft.replace(R.id.frameLayout,codeFragment)
+            ft.commit()
             (activity as MainActivity).callInit()
         }
     }

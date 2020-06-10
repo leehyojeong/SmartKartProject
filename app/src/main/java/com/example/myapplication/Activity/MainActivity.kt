@@ -27,6 +27,7 @@ import com.amazonaws.mobileconnectors.lambdainvoker.LambdaInvokerFactory
 import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
+import com.example.myapplication.BuyPage.BuyListFragment
 import com.example.myapplication.CodePage.CodeFragment
 import com.example.myapplication.Data.*
 import com.example.myapplication.MainDialog.EventDialog.EventDialog
