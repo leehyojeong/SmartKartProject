@@ -50,10 +50,10 @@ class EventDialog(context: Context, argeventList:ArrayList<EventItem>) : Dialog(
 
     fun setInit(){
         Log.d("이벤트","setInit")
-        changeImage(eventList[0].img,eventList[0].name)
-//        for(image in 0..3){
-//
-//        }
+
+        for(image in 0..3){
+            changeImage(eventList[image].img,eventList[image].name)
+        }
         var adapter = EventListAdapter(context,eventList)
         val layoutManager = LinearLayoutManager(context!!, LinearLayoutManager.VERTICAL,false)
         event_list_view.layoutManager = layoutManager

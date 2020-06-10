@@ -4,7 +4,8 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
-    android:gravity="center">
+    android:gravity="center"
+    android:id="@+id/itemBackGround">
 
 <!--    이미지 포함 상품 정보-->
     <androidx.constraintlayout.widget.ConstraintLayout

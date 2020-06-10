@@ -87,7 +87,7 @@ class OtherItemDialog(context: Context,item: Product,product:HashMap<String,Prod
         select_item_img.setImageBitmap(item.img)
 
         Log.d("확인","initLayout")
-        adapter = ItemListAdapter(list,context!!,false,false)//갯수 표시를 안해줌
+        adapter = ItemListAdapter(list,context!!,false,false,null)//갯수 표시를 안해줌
         val layoutManager = LinearLayoutManager(context!!, LinearLayoutManager.VERTICAL,false)
         select_list.layoutManager = layoutManager
         select_list.adapter = adapter
@@ -106,10 +106,15 @@ class OtherItemDialog(context: Context,item: Product,product:HashMap<String,Prod
             Log.d("코드 product",product.values.toString())
             //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             var item = dynamoDBMapper!!.load(RecommendData::class.java,item.name)
-            for(i in 0 until item.recommends.size){
-                list.add(product.get(item.recommends[i])!!)
-                Log.d("다른아이템",item.recommends[i])
+            if(item != null){
+                for(i in 0 until item.recommends.size){
+                    list.add(product.get(item.recommends[i])!!)
+                    Log.d("다른아이템",item.recommends[i])
+                }
+            }else{
+                list = arrayListOf()
             }
+
             var message = handler.obtainMessage()
             message.arg1 = READ_RECOMMEND_DATA
             handler.sendMessage(message)
