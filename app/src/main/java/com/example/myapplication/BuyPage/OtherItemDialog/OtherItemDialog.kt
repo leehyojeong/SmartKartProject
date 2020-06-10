@@ -108,8 +108,10 @@ class OtherItemDialog(context: Context,item: Product,product:HashMap<String,Prod
             var item = dynamoDBMapper!!.load(RecommendData::class.java,item.name)
             if(item != null){
                 for(i in 0 until item.recommends.size){
-                    list.add(product.get(item.recommends[i])!!)
-                    Log.d("다른아이템",item.recommends[i])
+                    if(product.containsKey(item.recommends[i]!!)){
+                        list.add(product.get(item.recommends[i])!!)
+                        Log.d("다른아이템",item.recommends[i])
+                    }
                 }
             }else{
                 list = arrayListOf()
