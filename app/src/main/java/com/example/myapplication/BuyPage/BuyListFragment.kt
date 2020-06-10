@@ -129,45 +129,13 @@ class BuyListFragment : Fragment() {
         initListLayout(false)
         makeAdapter()
         startTimer()
-        //   Log.d("aws_request",request.toString())
 
-        // val AWSAsyncTask2 = AWSAsyncTask2()
-        //AWSAsyncTask2.execute(request)
         init()
         checkSeperate()
         return v
     }
 
     fun startTimer() {
-        //      timer = Timer()
-        //     var TT = object:TimerTask(){
-        //         override fun run() {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//                val AWSAsyncTask2 = AWSAsyncTask2()
-        //               var request = DBRequestClass(true)
-        //               Log.d("타이머","타이머 실행")
-        //               AWSAsyncTask2.execute(request)
-//                Looper.prepare()
-        //               handler = Handler()
-        //              Looper.loop()
-        //              init()
-        //         }
-        //     }
-        //     timer.schedule(TT,0,1000)
-
-        //   handlerThread = HandlerThread("AWS DATA")
-        //   handlerThread.start()
-        //   handler = Handler(handlerThread.looper){
-        //       if(it.arg1 == READ_BUY_LIST){
-        //         Log.d("핸들러 스레드","핸들러")
-        //          //initListLayout(isCheck)
-        //adapter.notifyDataSetChanged()
-        //          init()
-        //      }
-        //       return@Handler true
-        //   }
-        //   return true
-
         thread = object : Thread() {
             override fun run() {
                 super.run()
@@ -228,15 +196,6 @@ class BuyListFragment : Fragment() {
 
     fun init() {
         loadData()
-        //handler = Handler(Handler.Callback {
-        //    when(it.arg1){
-        //        READ_BUY_LIST->{
-        //            makeList()
-        //           initListLayout(false)
-        //       }
-        //   }
-        //   return@Callback true
-        // })
         end_buy.setOnClickListener {
             var file = context!!.getFileStreamPath("KartCode.txt")
             file.delete()
@@ -345,39 +304,6 @@ class BuyListFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         thread.interrupt()
-    }
-
-    //코드 랜덤 발생 람다 async 함수
-    inner class AWSAsyncTask2 : AsyncTask<DBRequestClass, Void, DBResponseClass>() {
-        override fun doInBackground(vararg params: DBRequestClass?): DBResponseClass? {
-            Log.d("aws", "DBdoInBackground")
-            Log.d("파람", params.toString())
-            try {
-                return dbInterface.androidDBLambda(params[0])
-            } catch (lfe: LambdaFunctionException) {
-                Log.e("Tag", "Failed to invoke echo", lfe)
-                return null
-            }
-        }
-
-        override fun onPostExecute(result: DBResponseClass?) {
-            if (result == null) {
-                return
-            }
-            Log.d("async", result.eventmake)
-            if (result.eventmake.equals("DB 이벤트 발생")) {
-                Log.d("타이머", "데이터셋 바뀜뀜")
-                //timer.cancel()
-            }
-            // KartCode = result.authenticationCode.toString()
-            changeData = result.eventmake!!.toBoolean()
-            Log.d("데이터 바뀜", changeData.toString())
-            // codeBundle
-            //var message = handler.obtainMessage()
-            //message.arg1 = GET_CODE
-            //handler.sendMessage(message)
-
-        }
     }
 }
 
