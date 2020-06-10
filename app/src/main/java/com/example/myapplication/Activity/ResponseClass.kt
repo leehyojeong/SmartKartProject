@@ -7,5 +7,7 @@ public class ResponseClass {
         this.authenticationCode = authenticationCode
     }
 
+
+
     constructor() {}
 }
