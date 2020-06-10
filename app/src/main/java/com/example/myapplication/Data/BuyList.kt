@@ -9,17 +9,17 @@ import java.io.Serializable
 //get Data from DynamoDB User Buy List
 @DynamoDBTable(tableName = "Item")
 class BuyList:Serializable {
-    lateinit var code:String//kart number
+    lateinit var num:String//kart number
      var item:ArrayList<String> = arrayListOf()//item list
 
     @DynamoDBHashKey(attributeName = "code")
     @DynamoDBAttribute(attributeName = "code")
     fun getCodeNum():String{
-        return code
+        return num
     }
 
     fun setCodeNum(num:String){
-        this.code = num
+        this.num = num
     }
 
     @DynamoDBAttribute(attributeName = "item")
