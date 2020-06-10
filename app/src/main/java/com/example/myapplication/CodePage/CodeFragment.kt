@@ -40,6 +40,7 @@ class CodeFragment : Fragment() {
     lateinit var lambdaKartCode:TextView
     lateinit var product:HashMap<String,Product>
     lateinit var codeNum:String
+    var isFile = false
 
     //AWS
     var dynamoDBMapper: DynamoDBMapper?= null
@@ -47,11 +48,12 @@ class CodeFragment : Fragment() {
     lateinit var credentials: CognitoCachingCredentialsProvider
 
     companion object{
-        fun newInstace(product:HashMap<String,Product>,codeNum:String):Fragment{
+        fun newInstace(product:HashMap<String,Product>,codeNum:String,isFile:Boolean):Fragment{
             var codeFrag = CodeFragment()
             var args = Bundle()
             args.putSerializable("PRODUCT",product)
             args.putString("CODE",codeNum)
+            args.putBoolean("ISFILE",isFile)
             codeFrag.arguments = args
             return codeFrag
         }
@@ -84,6 +86,7 @@ class CodeFragment : Fragment() {
         if(arguments != null){
             this.product = arguments!!.getSerializable("PRODUCT") as HashMap<String,Product>
             this.codeNum = arguments!!.getString("CODE").toString()
+            this.isFile = arguments!!.getBoolean("ISFILE")
         }
     }
 
@@ -109,11 +112,13 @@ class CodeFragment : Fragment() {
             //save kart Num
             var emptyArray = arrayListOf<String>()
             var kart = BuyList()
-            kart.setCodeNum(target)
-            kart.setItemList(emptyArray)
+            if(!isFile){
+                kart.setCodeNum(target)
+                kart.setItemList(emptyArray)
 
-            thread(start = true){
-                dynamoDBMapper!!.save(kart)
+                thread(start = true){
+                    dynamoDBMapper!!.save(kart)
+                }
             }
 
             buyFrag = BuyListFragment()

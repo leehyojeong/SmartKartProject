@@ -94,6 +94,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
     lateinit var myInterface:MyInterface
     var KartCode:String = "00000"
     lateinit var codeBundle: Bundle
+    var kartCodeGetFile = false
 
     //Handler
     lateinit var handler: Handler
@@ -144,10 +145,12 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
     }
 
     fun getKartCode():Boolean{
+
         var file = this.getFileStreamPath("KartCode.txt")
 //        var file = File("KartCode.txt")
         if(file.exists()){
             Log.d("카트번호","존재")
+            kartCodeGetFile = true
             var inputStream = openFileInput("KartCode.txt")
             if(inputStream != null){
                 var inputStreamReader = InputStreamReader(inputStream)
@@ -159,6 +162,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
             return true
         }
        else{
+            kartCodeGetFile = false
             Log.d("카트번호","존재안함")
             return false
         }
@@ -606,7 +610,7 @@ class MainActivity : AppCompatActivity(),OnMapReadyCallback,GoogleApiClient.Conn
         when (n) {
             1 -> {
                 // 연동코드 입력 프래그먼트
-                ft.replace(R.id.frameLayout, CodeFragment.newInstace(product,KartCode))
+                ft.replace(R.id.frameLayout, CodeFragment.newInstace(product,KartCode,kartCodeGetFile))
                 // ft.replace(R.id.frameLayout,codeFragment)
                 ft.commit()
             }

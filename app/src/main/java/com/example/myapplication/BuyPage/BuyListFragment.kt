@@ -253,7 +253,6 @@ class BuyListFragment : Fragment() {
                 var otherDialog = OtherItemDialog(context!!, list[position], product)
                 otherDialog.show()
             }
-
         }
 
         adapter.itemCheckedListener = object : ItemListAdapter.OnItemCheckListener {
